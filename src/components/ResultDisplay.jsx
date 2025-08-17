@@ -1,0 +1,24 @@
+function ResultDisplay({ isLoading, result }) {
+  if (isLoading) {
+    return (
+      <p className='text-center text-slate-400 mt-8'>Loading price data...</p>
+    );
+  }
+  if (!result) {
+    return (
+      <p className='text-center text-slate-400 mt-8 h-20 flex items-center justify-center'>
+        Enter an item and price to see the result.
+      </p>
+    );
+  }
+  return (
+    <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
+      <p className='text-md text-slate-300'>"{result.name}" costs</p>
+      <p className='text-3xl font-bold text-[#F7931A] my-1'>
+        {result.sats.toLocaleString('en-US')} sats
+      </p>
+    </div>
+  );
+}
+
+export default ResultDisplay;
