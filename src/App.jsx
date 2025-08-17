@@ -2,13 +2,13 @@ import './App.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import Converter from './components/Converter';
 import SavedItemsList from './components/SavedItemsList';
-import HistoricalPriceModal from './components/HistoricalPriceModel';
-import { FaBitcoin } from 'react-icons/fa';
+import HistoricalPriceModal from './components/HistoricalPriceModal';
 import {
-  fetchBitcoinHistoricalPrice,
+  fetchBitcoinPriceHistoryRange,
   fetchBitcoinPrices,
 } from './api/cryptoApi';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { FaBitcoin } from 'react-icons/fa';
 
 function App() {
   const [btcPrices, setBtcPrices] = useState(null);
@@ -21,6 +21,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [historyCache, setHistoryCache] = useState({});
 
   // Effect to fetch prices on initial load
   useEffect(() => {
@@ -58,34 +59,45 @@ function App() {
       setIsModalOpen(true);
       setModalData(null);
 
-      const date = new Date();
-      date.setDate(date.getDate() - 30);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const dateString = `${day}-${month}-${year}`;
+      let priceHistory = historyCache[item.currency];
 
-      const historicalPriceData = await fetchBitcoinHistoricalPrice(dateString);
+      if (!priceHistory) {
+        console.log(
+          `Fetching new history for ${item.currency.toUpperCase()}...`
+        );
+        priceHistory = await fetchBitcoinPriceHistoryRange(item.currency);
 
-      if (
-        historicalPriceData &&
-        historicalPriceData[item.currency.toLowerCase()] &&
-        btcPrices &&
-        btcPrices[item.currency.toLowerCase()]
-      ) {
+        // Save new data in cache
+        if (priceHistory) {
+          setHistoryCache((prevCache) => ({
+            ...prevCache,
+            [item.currency]: priceHistory,
+          }));
+        }
+      } else {
+        console.log(`Using cached history for ${item.currency.toUpperCase()}.`);
+      }
+
+      if (priceHistory && btcPrices) {
+        const chartData = priceHistory.map(([timestamp, btcPrice]) => {
+          const sats = (parseFloat(item.price) / btcPrice) * 100_000_000;
+          return {
+            date: new Date(timestamp).toLocaleDateString(),
+            sats: Math.round(sats),
+          };
+        });
+
         const currentBtcPrice = btcPrices[item.currency.toLowerCase()];
         const currentSats =
           (parseFloat(item.price) / currentBtcPrice) * 100_000_000;
-
-        const historicalBtcPrice =
-          historicalPriceData[item.currency.toLowerCase()];
-        const historicalSats =
-          (parseFloat(item.price) / historicalBtcPrice) * 100_000_000;
+        chartData.push({
+          date: new Date().toLocaleDateString(),
+          sats: Math.round(currentSats),
+        });
 
         setModalData({
           itemName: item.name,
-          currentSats: currentSats,
-          historicalSats: historicalSats,
+          chartData: chartData,
         });
       } else {
         setModalData({
@@ -94,7 +106,7 @@ function App() {
       }
       setIsModalLoading(false);
     },
-    [btcPrices]
+    [btcPrices, historyCache]
   );
 
   return (
