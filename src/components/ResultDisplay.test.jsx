@@ -1,3 +1,4 @@
+// verifiera att gränssnittet renderas korrekt under olika förhållanden.
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import ResultDisplay from './ResultDisplay';
@@ -24,7 +25,6 @@ describe('ResultDisplay Component', () => {
     };
     render(<ResultDisplay isLoading={false} result={mockResult} />);
 
-    // (SV) Kollar om namnet och det formaterade satoshi-värdet renderas korrekt
     expect(screen.getByText(/"A Test Item" costs/i)).toBeInTheDocument();
     expect(screen.getByText(/12,345 sats/i)).toBeInTheDocument();
   });

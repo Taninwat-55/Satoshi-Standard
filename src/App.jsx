@@ -1,5 +1,7 @@
 import './App.css';
 import React, { useState, useEffect, useCallback } from 'react';
+import { SkeletonTheme } from 'react-loading-skeleton';
+import { Toaster } from 'react-hot-toast';
 import Converter from './components/Converter';
 import SavedItemsList from './components/SavedItemsList';
 import HistoricalPriceModal from './components/HistoricalPriceModal';
@@ -7,23 +9,19 @@ import {
   fetchBitcoinPriceHistoryRange,
   fetchBitcoinPrices,
 } from './api/cryptoApi';
-import { useLocalStorage } from './hooks/useLocalStorage';
 import { FaBitcoin } from 'react-icons/fa';
+import { SavedItemsProvider } from './contexts/SavedItemsProvider';
 
 function App() {
   const [btcPrices, setBtcPrices] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // All localStorage logic is now handled by our custom hook!
-  const [savedItems, setSavedItems] = useLocalStorage('savedSatoshiItems', []);
-
-  // State for the modal remains here as it's specific to this component's UI
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [historyCache, setHistoryCache] = useState({});
+  const [modalItem, setModalItem] = useState(null); // NEW: Track which item is in the modal
+  const [timeRange, setTimeRange] = useState(30); // NEW: Track the selected time range (in days)
 
-  // Effect to fetch prices on initial load
   useEffect(() => {
     async function loadPrices() {
       setIsLoading(true);
@@ -34,70 +32,66 @@ function App() {
     loadPrices();
   }, []);
 
-  // Functions to manage the saved items list
-  const addItemToList = (item) => {
-    setSavedItems((prevItems) => [
-      ...prevItems,
-      { ...item, id: Date.now(), dateAdded: new Date().toISOString() },
-    ]);
-  };
+  useEffect(() => {
+    if (!modalItem) return;
 
-  const removeItemFromList = (itemId) => {
-    setSavedItems((prevItems) =>
-      prevItems.filter((item) => item.id !== itemId)
-    );
-  };
-
-  const clearList = () => {
-    setSavedItems([]);
-  };
-
-  // Function to handle the price comparison logic
-  const handleComparePrice = useCallback(
-    async (item) => {
+    const fetchHistory = async () => {
       setIsModalLoading(true);
-      setIsModalOpen(true);
       setModalData(null);
 
-      let priceHistory = historyCache[item.currency];
+      const cacheKey = `${modalItem.currency}-${timeRange}`;
+      let priceHistory = historyCache[cacheKey];
 
       if (!priceHistory) {
         console.log(
-          `Fetching new history for ${item.currency.toUpperCase()}...`
+          `Fetching new history for ${modalItem.currency.toUpperCase()} (${timeRange} days)...`
         );
-        priceHistory = await fetchBitcoinPriceHistoryRange(item.currency);
+        priceHistory = await fetchBitcoinPriceHistoryRange(
+          modalItem.currency,
+          timeRange
+        );
 
-        // Save new data in cache
         if (priceHistory) {
           setHistoryCache((prevCache) => ({
             ...prevCache,
-            [item.currency]: priceHistory,
+            [cacheKey]: priceHistory,
           }));
         }
       } else {
-        console.log(`Using cached history for ${item.currency.toUpperCase()}.`);
+        console.log(
+          `Using cached history for ${modalItem.currency.toUpperCase()} (${timeRange} days).`
+        );
       }
 
       if (priceHistory && btcPrices) {
         const chartData = priceHistory.map(([timestamp, btcPrice]) => {
-          const sats = (parseFloat(item.price) / btcPrice) * 100_000_000;
+          const sats = (parseFloat(modalItem.price) / btcPrice) * 100_000_000;
           return {
             date: new Date(timestamp).toLocaleDateString(),
             sats: Math.round(sats),
           };
         });
 
-        const currentBtcPrice = btcPrices[item.currency.toLowerCase()];
+        // Add today's price to the end of the chart data
+        const currentBtcPrice = btcPrices[modalItem.currency.toLowerCase()];
         const currentSats =
-          (parseFloat(item.price) / currentBtcPrice) * 100_000_000;
-        chartData.push({
-          date: new Date().toLocaleDateString(),
-          sats: Math.round(currentSats),
-        });
+          (parseFloat(modalItem.price) / currentBtcPrice) * 100_000_000;
+
+        // Ensure we don't duplicate the last entry if the API includes today
+        const lastApiDate = new Date(
+          priceHistory[priceHistory.length - 1][0]
+        ).toLocaleDateString();
+        if (lastApiDate !== new Date().toLocaleDateString()) {
+          chartData.push({
+            date: new Date().toLocaleDateString(),
+            sats: Math.round(currentSats),
+          });
+        }
 
         setModalData({
-          itemName: item.name,
+          itemName: modalItem.name,
           chartData: chartData,
+          timeRange: timeRange,
         });
       } else {
         setModalData({
@@ -105,46 +99,76 @@ function App() {
         });
       }
       setIsModalLoading(false);
-    },
-    [btcPrices, historyCache]
-  );
+    };
+
+    fetchHistory();
+  }, [modalItem, timeRange, btcPrices, historyCache]);
+
+  const handleComparePrice = useCallback((item) => {
+    setTimeRange(30); // Reset to default 30 days when opening
+    setModalItem(item);
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalItem(null); // Clear the item when modal closes
+  };
 
   return (
-    <div className='bg-slate-900 text-slate-200 min-h-screen font-sans'>
-      <div className='container mx-auto p-4 md:p-8 max-w-4xl'>
-        <header className='text-center mb-12'>
-          <FaBitcoin className='inline-block text-5xl md:text-6xl mb-4 text-[#F7931A]' />
-          <h1 className='text-4xl md:text-5xl font-bold text-white'>
-            The Satoshi Standard
-          </h1>
-          <p className='text-slate-400 mt-2'>What do things *really* cost?</p>
-        </header>
-        <main className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-          <div className='md:pr-4'>
-            <Converter
-              btcPrices={btcPrices}
-              isLoading={isLoading}
-              addItemToList={addItemToList}
-            />
-          </div>
-          <div>
-            <SavedItemsList
-              items={savedItems}
-              removeItem={removeItemFromList}
-              clearList={clearList}
-              onCompare={handleComparePrice}
-            />
-          </div>
-        </main>
-      </div>
-      {isModalOpen && (
-        <HistoricalPriceModal
-          isLoading={isModalLoading}
-          data={modalData}
-          onClose={() => setIsModalOpen(false)}
+    <SkeletonTheme baseColor='#1a1a1a' highlightColor='#2a2a2a'>
+      <div className='bg-neutral-950 text-neutral-200 min-h-screen font-sans antialiased relative isolate overflow-hidden'>
+        <div className='absolute top-0 -left-4 w-72 h-72 bg-orange-900 rounded-full mix-blend-lighten filter blur-3xl opacity-20 animate-[blob_7s_infinite]'></div>
+        <div className='absolute top-0 -right-4 w-72 h-72 bg-purple-900 rounded-full mix-blend-lighten filter blur-3xl opacity-20 animate-[blob_7s_infinite] [animation-delay:2s]'></div>
+        <div className='absolute -bottom-8 left-20 w-72 h-72 bg-sky-900 rounded-full mix-blend-lighten filter blur-3xl opacity-20 animate-[blob_7s_infinite] [animation-delay:4s]'></div>
+
+        <Toaster
+          position='top-center'
+          reverseOrder={false}
+          toastOptions={{
+            style: {
+              background: '#1e293b',
+              color: '#cbd5e1',
+              border: '1px solid #334155',
+            },
+          }}
         />
-      )}
-    </div>
+
+        <div className='relative z-10 container mx-auto p-4 md:p-8 max-w-5xl'>
+          <header className='text-center mb-12'>
+            <div className='relative inline-block mb-4'>
+              <FaBitcoin className='relative text-6xl md:text-7xl text-brand-orange' />
+              <div className='absolute inset-0 bg-brand-orange blur-xl opacity-50'></div>
+            </div>
+            <h1 className='text-4xl md:text-5xl font-bold text-neutral-100 tracking-tight'>
+              The Satoshi Standard
+            </h1>
+            <p className='text-neutral-400 mt-2 text-lg'>
+              What do things *really* cost?
+            </p>
+          </header>
+          <SavedItemsProvider btcPrices={btcPrices}>
+            <main className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+              <div className='lg:pr-4'>
+                <Converter btcPrices={btcPrices} isLoading={isLoading} />
+              </div>
+              <div>
+                <SavedItemsList onCompare={handleComparePrice} />
+              </div>
+            </main>
+          </SavedItemsProvider>
+        </div>
+        {isModalOpen && (
+          <HistoricalPriceModal
+            isLoading={isModalLoading}
+            data={modalData}
+            onClose={closeModal}
+            timeRange={timeRange}
+            setTimeRange={setTimeRange}
+          />
+        )}
+      </div>
+    </SkeletonTheme>
   );
 }
 

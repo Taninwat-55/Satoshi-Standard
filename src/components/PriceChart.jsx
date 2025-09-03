@@ -23,11 +23,11 @@ ChartJS.register(
 
 function PriceChart({ chartData }) {
   const data = {
-    labels: chartData.map((d) => d.date), 
+    labels: chartData.map((d) => d.date),
     datasets: [
       {
         label: 'Price in Sats',
-        data: chartData.map((d) => d.sats), 
+        data: chartData.map((d) => d.sats),
         borderColor: '#F7931A',
         backgroundColor: 'rgba(247, 147, 26, 0.2)',
         fill: true,
@@ -41,7 +41,7 @@ function PriceChart({ chartData }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, 
+        display: false,
       },
       tooltip: {
         callbacks: {
@@ -61,22 +61,22 @@ function PriceChart({ chartData }) {
     scales: {
       y: {
         ticks: {
-          color: '#94a3b8', 
+          color: '#a3a3a3',
         },
         grid: {
-          color: 'rgba(148, 163, 184, 0.1)', 
+          color: 'rgba(163, 163, 163, 0.1)',
         },
       },
       x: {
         ticks: {
-          color: '#94a3b8', 
+          color: '#a3a3a3',
           maxRotation: 0,
           minRotation: 0,
           autoSkip: true,
-          maxTicksLimit: 6, 
+          maxTicksLimit: 6,
         },
         grid: {
-          display: false, 
+          display: false,
         },
       },
     },

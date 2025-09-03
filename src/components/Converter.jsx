@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import InputForm from './InputForm';
 import ResultDisplay from './ResultDisplay';
+import { useSavedItems } from '../hooks/useSavedItems';
 
-function Converter({ btcPrices, isLoading, addItemToList }) {
+function Converter({ btcPrices, isLoading }) {
+  const { addItemToList } = useSavedItems();
   const [itemName, setItemName] = useState('A cup of coffee');
   const [price, setPrice] = useState('4');
   const [currency, setCurrency] = useState('usd');
@@ -13,9 +15,11 @@ function Converter({ btcPrices, isLoading, addItemToList }) {
       setResult(null);
       return;
     }
+
     const btcPriceInSelectedCurrency = btcPrices[currency];
     const priceInBtc = parseFloat(price) / btcPriceInSelectedCurrency;
     const priceInSats = priceInBtc * 100_000_000;
+
     setResult({
       sats: Math.round(priceInSats),
       name: itemName || 'Something',
@@ -42,8 +46,10 @@ function Converter({ btcPrices, isLoading, addItemToList }) {
   };
 
   return (
-    <div className='bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700'>
-      <h2 className='text-2xl font-bold mb-6 text-white'>Price an Item</h2>
+    <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10'>
+      <h2 className='text-2xl font-bold mb-6 text-neutral-100'>
+        Price an Item
+      </h2>
       <InputForm
         itemName={itemName}
         setItemName={setItemName}
@@ -57,7 +63,7 @@ function Converter({ btcPrices, isLoading, addItemToList }) {
       <button
         onClick={handleAddToList}
         disabled={!result}
-        className='w-full mt-4 bg-slate-700 text-slate-200 font-bold py-3 px-4 rounded-lg hover:bg-slate-600 transition-colors disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed'
+        className='w-full mt-4 bg-neutral-500/20 text-neutral-200 font-bold py-3 px-4 rounded-lg hover:bg-neutral-500/40 transition-colors disabled:bg-neutral-800/50 disabled:text-neutral-500 disabled:cursor-not-allowed'
       >
         Add to List
       </button>
