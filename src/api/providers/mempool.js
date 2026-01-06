@@ -31,8 +31,49 @@ export const mempoolProvider = {
         return this.supportedCurrencies;
     },
 
-    async fetchBitcoinPriceHistoryRange() {
-        console.warn('Historical price data is not supported by Mempool.space provider.');
-        return null;
+    async fetchBitcoinPriceHistoryRange(currency, days = 365) {
+        try {
+            // Mempool endpoint: /api/v1/historical-price?currency={code}
+            // It returns full history. We will filter by 'days' on client side.
+            // Format: Array of { time: 1234567890, USD: 12345.67 } (if currency is USD) / or "prices": [...]
+            // Actually API returns array of objects directly: [{ time: 111, USD: 222 }, ...]
+
+            const targetCurrency = currency.toUpperCase();
+
+            // Note: Mempool.space historical-price endpoint might default to USD if just /historical-price
+            // Docs say ?currency=EUR works.
+            const url = `https://mempool.space/api/v1/historical-price?currency=${targetCurrency}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                if (response.status === 400 && targetCurrency === 'USD') {
+                    // Sometimes USD assumes default? Retry without param?
+                }
+                throw new Error(`Mempool API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Filter by days
+            const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
+
+            // Map to [timestamp, price]
+            // Data item: { time: 1367193600, USD: 139.08 }
+            // Note: time is in seconds.
+
+            const prices = data
+                .map(item => {
+                    const price = item[targetCurrency] || item.price || item.USD; // Fallback
+                    return [item.time * 1000, parseFloat(price)];
+                })
+                .filter(item => item[0] >= cutoff);
+
+            return prices;
+
+        } catch (error) {
+            console.error('Error fetching Bitcoin history from Mempool.space:', error);
+            // Return null so it can try fallback if we keep one.
+            return null;
+        }
     }
 };
