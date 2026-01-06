@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useSavedItems } from '../../hooks/useSavedItems';
 
 function EditItemForm({ item, onSave, onCancel }) {
-  const { supportedCurrencies, fetchPriceForCurrency } = useSavedItems();
+  const { supportedCurrencies, fetchPriceForCurrency, itemCategories } = useSavedItems();
   const [itemName, setItemName] = useState(item.name);
   const [price, setPrice] = useState(item.price);
   const [currency, setCurrency] = useState(item.currency);
+  const [category, setCategory] = useState(item.category || '');
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -16,6 +17,7 @@ function EditItemForm({ item, onSave, onCancel }) {
       name: itemName,
       price: price,
       currency: currency,
+      category: category,
     });
   };
 
@@ -43,7 +45,7 @@ function EditItemForm({ item, onSave, onCancel }) {
         className='block w-full p-2 mb-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
         placeholder='Item Name'
       />
-      <div className='flex space-x-2'>
+      <div className='flex space-x-2 mb-2'>
         <input
           type='number'
           value={price}
@@ -80,6 +82,21 @@ function EditItemForm({ item, onSave, onCancel }) {
           </datalist>
         </div>
       </div>
+
+      <div className="mb-2">
+        <input
+          type='text'
+          list='edit-categories'
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className='block w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
+          placeholder='Category'
+        />
+        <datalist id='edit-categories'>
+          {itemCategories && itemCategories.map(cat => <option key={cat} value={cat} />)}
+        </datalist>
+      </div>
+
       <div className='flex justify-end space-x-2 mt-3'>
         <button
           type='button'
