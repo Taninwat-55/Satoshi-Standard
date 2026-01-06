@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import EditItemForm from './EditItemForm';
 import CategoryBreakdown from './CategoryBreakdown';
+import PriceChangeBadge from './PriceChangeBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
 
@@ -16,6 +17,7 @@ function SavedItemsList({ onCompare }) {
     setSortCriteria,
     satoshiGoal,
     setSatoshiGoal,
+    btcPrices,
   } = useSavedItems();
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(satoshiGoal);
@@ -161,7 +163,7 @@ function SavedItemsList({ onCompare }) {
                     <div className='bg-slate-700/50 p-3 rounded-lg flex justify-between items-center'>
                       <div>
                         <p className='font-semibold text-white'>{item.name}</p>
-                        <div className='text-sm text-[#F7931A] flex items-center gap-2'>
+                        <div className='text-sm text-[#F7931A] flex items-center gap-2 flex-wrap'>
                           <span>{item.sats.toLocaleString('en-US')} sats</span>
                           <span className='text-slate-400'>
                             ({item.price} {item.currency.toUpperCase()})
@@ -171,6 +173,12 @@ function SavedItemsList({ onCompare }) {
                               {item.category}
                             </span>
                           )}
+                          <PriceChangeBadge
+                            item={item}
+                            currentBtcPrice={
+                              btcPrices ? btcPrices[item.currency] : null
+                            }
+                          />
                         </div>
                       </div>
                       <div className='flex items-center space-x-3'>
