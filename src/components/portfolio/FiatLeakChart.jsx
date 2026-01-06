@@ -12,7 +12,7 @@ import {
     Filler,
 } from 'chart.js';
 import { fetchBitcoinPriceHistoryRange, getProvider, setProvider } from '../../api/cryptoApi';
-import { coincapProvider } from '../../api/providers/coincap';
+import { mempoolProvider } from '../../api/providers/mempool';
 
 ChartJS.register(
     CategoryScale,
@@ -49,11 +49,11 @@ function FiatLeakChart({ currency = 'usd' }) {
                 setUsedProvider(currentProvider.displayName);
 
                 if (!prices || prices.length === 0) {
-                    // Fallback to CoinCap if primary failed or returned nothing (e.g. rate limit or mempool)
-                    // CoinCap strictly returns USD history, so we might need to warn user if they asked for SEK
-                    console.log("Falling back to CoinCap for history data...");
-                    prices = await coincapProvider.fetchBitcoinPriceHistoryRange('usd', days);
-                    setUsedProvider('CoinCap (Backup)');
+                    // Fallback to Mempool (Robust, CORS-friendly) if primary failed
+                    console.log("Falling back to Mempool for history data...");
+                    // Mempool provider handles 'usd' best, but tries others too.
+                    prices = await mempoolProvider.fetchBitcoinPriceHistoryRange(currency, days);
+                    setUsedProvider('Mempool (Backup)');
                 }
 
                 if (!prices || prices.length === 0) {

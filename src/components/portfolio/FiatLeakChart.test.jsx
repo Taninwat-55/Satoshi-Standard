@@ -14,9 +14,9 @@ vi.mock('../../api/cryptoApi', () => ({
     getProvider: vi.fn(),
 }));
 
-// Mock coincap provider
-vi.mock('../../api/providers/coincap', () => ({
-    coincapProvider: {
+// Mock mempool provider
+vi.mock('../../api/providers/mempool', () => ({
+    mempoolProvider: {
         fetchBitcoinPriceHistoryRange: vi.fn()
     }
 }));
@@ -57,9 +57,9 @@ describe('FiatLeakChart', () => {
         cryptoApi.getProvider.mockReturnValue({ name: 'mempool', displayName: 'Mempool' });
 
         // Fallback also fails
-        const { coincapProvider } = await import('../../api/providers/coincap');
+        const { mempoolProvider } = await import('../../api/providers/mempool');
         // @ts-ignore
-        coincapProvider.fetchBitcoinPriceHistoryRange.mockResolvedValue([]);
+        mempoolProvider.fetchBitcoinPriceHistoryRange.mockResolvedValue([]);
 
         render(<FiatLeakChart currency="usd" />);
 
