@@ -11,7 +11,8 @@ import {
     Legend,
     Filler,
 } from 'chart.js';
-import { fetchBitcoinPriceHistoryRange, getProvider } from '../../api/cryptoApi';
+import { fetchBitcoinPriceHistoryRange, getProvider, setProvider } from '../../api/cryptoApi';
+import { coincapProvider } from '../../api/providers/coincap';
 
 ChartJS.register(
     CategoryScale,
@@ -29,6 +30,7 @@ function FiatLeakChart({ currency = 'usd' }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [days, setDays] = useState(365 * 5); // Default to 5 years
+    const [usedProvider, setUsedProvider] = useState('');
 
     useEffect(() => {
         async function fetchData() {
@@ -37,16 +39,25 @@ function FiatLeakChart({ currency = 'usd' }) {
             setChartData(null);
 
             try {
-                const prices = await fetchBitcoinPriceHistoryRange(currency, days);
-                const provider = getProvider();
+                let prices = null;
+                const currentProvider = getProvider();
+
+                // If current provider is Mempool (no history) or we want to force CoinCap for free/reliable history
+                // We'll try the current provider first, if it fails/returns null, we fallback to CoinCap
+
+                prices = await fetchBitcoinPriceHistoryRange(currency, days);
+                setUsedProvider(currentProvider.displayName);
 
                 if (!prices || prices.length === 0) {
-                    if (provider.name === 'mempool') {
-                        setError('Historical chart not supported by Mempool provider.');
-                    } else {
-                        // Likely rate limited or API key needed
-                        setError('Chart unavailable (API Rate Limit). Try again later.');
-                    }
+                    // Fallback to CoinCap if primary failed or returned nothing (e.g. rate limit or mempool)
+                    // CoinCap strictly returns USD history, so we might need to warn user if they asked for SEK
+                    console.log("Falling back to CoinCap for history data...");
+                    prices = await coincapProvider.fetchBitcoinPriceHistoryRange('usd', days);
+                    setUsedProvider('CoinCap (Backup)');
+                }
+
+                if (!prices || prices.length === 0) {
+                    setError('Chart data unavailable. Please try again later.');
                     setIsLoading(false);
                     return;
                 }
@@ -65,7 +76,7 @@ function FiatLeakChart({ currency = 'usd' }) {
                     labels,
                     datasets: [
                         {
-                            label: `Satoshis per 1 ${currency.toUpperCase()}`,
+                            label: `Satoshis per 1 USD (Purchasing Power)`,
                             data: dataPoints,
                             borderColor: '#F7931A',
                             backgroundColor: 'rgba(247, 147, 26, 0.1)',
@@ -162,8 +173,9 @@ function FiatLeakChart({ currency = 'usd' }) {
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-lg font-semibold text-white">Fiat Purchasing Power</h3>
-                    <p className="text-sm text-neutral-400">
-                        Purchasing power of 1 {currency.toUpperCase()} in Satoshis over time
+                    <p className="text-sm text-neutral-400 flex items-center gap-2">
+                        1 USD purchasing power in Sats
+                        {usedProvider && <span className="text-xs bg-neutral-800 px-2 py-0.5 rounded text-neutral-500">Source: {usedProvider}</span>}
                     </p>
                 </div>
                 <div className="flex bg-neutral-800 rounded-lg p-1">
