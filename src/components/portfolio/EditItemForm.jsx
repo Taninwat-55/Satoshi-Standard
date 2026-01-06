@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useSavedItems } from '../../hooks/useSavedItems';
 
 function EditItemForm({ item, onSave, onCancel }) {
+  const { supportedCurrencies, fetchPriceForCurrency } = useSavedItems();
   const [itemName, setItemName] = useState(item.name);
   const [price, setPrice] = useState(item.price);
   const [currency, setCurrency] = useState(item.currency);
@@ -15,6 +17,18 @@ function EditItemForm({ item, onSave, onCancel }) {
       price: price,
       currency: currency,
     });
+  };
+
+  const handleCurrencyChange = (e) => {
+    const newCurrency = e.target.value.toLowerCase();
+    setCurrency(newCurrency);
+    if (
+      supportedCurrencies &&
+      supportedCurrencies.includes(newCurrency) &&
+      fetchPriceForCurrency
+    ) {
+      fetchPriceForCurrency(newCurrency);
+    }
   };
 
   return (
@@ -39,17 +53,32 @@ function EditItemForm({ item, onSave, onCancel }) {
           step='0.01'
           min='0'
         />
-        <select
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          className='p-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
-        >
-          <option value='usd'>USD</option>
-          <option value='eur'>EUR</option>
-          <option value='sek'>SEK</option>
-          <option value='dkk'>DKK</option>
-          <option value='thb'>THB</option>
-        </select>
+        <div className='relative'>
+          <input
+            list='edit-currencies'
+            value={currency}
+            onChange={handleCurrencyChange}
+            className='p-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition w-24 uppercase'
+          />
+          <datalist id='edit-currencies'>
+            {supportedCurrencies &&
+              supportedCurrencies.map((c) => (
+                <option key={c} value={c}>
+                  {c.toUpperCase()}
+                </option>
+              ))}
+            {!supportedCurrencies ||
+              (supportedCurrencies.length === 0 && (
+                <>
+                  <option value='usd'>USD</option>
+                  <option value='eur'>EUR</option>
+                  <option value='sek'>SEK</option>
+                  <option value='dkk'>DKK</option>
+                  <option value='thb'>THB</option>
+                </>
+              ))}
+          </datalist>
+        </div>
       </div>
       <div className='flex justify-end space-x-2 mt-3'>
         <button

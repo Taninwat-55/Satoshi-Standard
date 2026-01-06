@@ -2,35 +2,54 @@ import './App.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import { Toaster } from 'react-hot-toast';
-import Converter from './components/Converter';
-import SavedItemsList from './components/SavedItemsList';
-import HistoricalPriceModal from './components/HistoricalPriceModal';
+import Converter from './components/converter/Converter';
+import SavedItemsList from './components/portfolio/SavedItemsList';
+import HistoricalPriceModal from './components/shared/HistoricalPriceModal';
 import {
+  fetchBitcoinHistoricalPrice,
   fetchBitcoinPriceHistoryRange,
   fetchBitcoinPrices,
+  fetchSupportedCurrencies,
 } from './api/cryptoApi';
 import { FaBitcoin } from 'react-icons/fa';
 import { SavedItemsProvider } from './contexts/SavedItemsProvider';
 
 function App() {
   const [btcPrices, setBtcPrices] = useState(null);
+  const [supportedCurrencies, setSupportedCurrencies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [historyCache, setHistoryCache] = useState({});
-  const [modalItem, setModalItem] = useState(null); // NEW: Track which item is in the modal
-  const [timeRange, setTimeRange] = useState(30); // NEW: Track the selected time range (in days)
+  const [modalItem, setModalItem] = useState(null); 
+  const [timeRange, setTimeRange] = useState(30); 
 
   useEffect(() => {
-    async function loadPrices() {
+    async function initData() {
       setIsLoading(true);
-      const prices = await fetchBitcoinPrices();
+      const [prices, currencies] = await Promise.all([
+        fetchBitcoinPrices(),
+        fetchSupportedCurrencies(),
+      ]);
       setBtcPrices(prices);
+      setSupportedCurrencies(currencies);
       setIsLoading(false);
     }
-    loadPrices();
+    initData();
   }, []);
+
+  const fetchPriceForCurrency = useCallback(
+    async (currency) => {
+      if (btcPrices && btcPrices[currency]) return;
+
+      const prices = await fetchBitcoinPrices(currency);
+      if (prices) {
+        setBtcPrices((prev) => ({ ...prev, ...prices }));
+      }
+    },
+    [btcPrices]
+  );
 
   useEffect(() => {
     if (!modalItem) return;
@@ -147,10 +166,19 @@ function App() {
               What do things *really* cost?
             </p>
           </header>
-          <SavedItemsProvider btcPrices={btcPrices}>
+          <SavedItemsProvider
+            btcPrices={btcPrices}
+            supportedCurrencies={supportedCurrencies}
+            fetchPriceForCurrency={fetchPriceForCurrency}
+          >
             <main className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
               <div className='lg:pr-4'>
-                <Converter btcPrices={btcPrices} isLoading={isLoading} />
+                <Converter
+                  btcPrices={btcPrices}
+                  isLoading={isLoading}
+                  supportedCurrencies={supportedCurrencies}
+                  fetchPriceForCurrency={fetchPriceForCurrency}
+                />
               </div>
               <div>
                 <SavedItemsList onCompare={handleComparePrice} />

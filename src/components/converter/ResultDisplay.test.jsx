@@ -4,11 +4,12 @@ import { describe, it, expect } from 'vitest';
 import ResultDisplay from './ResultDisplay';
 
 describe('ResultDisplay Component', () => {
-  it('renders loading message when isLoading is true', () => {
-    render(<ResultDisplay isLoading={true} result={null} />);
+  it('renders loading skeleton when isLoading is true', () => {
+    const { container } = render(<ResultDisplay isLoading={true} result={null} />);
 
-    // (SV) Kollar om texten "Loading price data..." finns i dokumentet
-    expect(screen.getByText(/loading price data/i)).toBeInTheDocument();
+    // Check for skeleton elements by class name
+    const skeletons = container.getElementsByClassName('react-loading-skeleton');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it('renders "no result" message when there is no result', () => {

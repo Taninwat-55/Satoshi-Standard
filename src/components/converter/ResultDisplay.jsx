@@ -19,6 +19,24 @@ function ResultDisplay({ isLoading, result }) {
     );
   }
 
+  if (result.mode === 'satsToFiat') {
+    const formattedFiat = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: result.currency.toUpperCase(),
+    }).format(result.fiat);
+
+    return (
+      <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
+        <p className='text-md text-slate-300'>
+          {parseInt(result.sats).toLocaleString('en-US')} sats is equal to
+        </p>
+        <p className='text-3xl font-bold text-[#F7931A] my-1'>
+          {formattedFiat}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
       <p className='text-md text-slate-300'>"{result.name}" costs</p>

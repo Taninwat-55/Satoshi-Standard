@@ -3,8 +3,14 @@ import { SavedItemsContext } from './SavedItemsContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { toast } from 'react-hot-toast';
 
-export function SavedItemsProvider({ children, btcPrices }) {
+export function SavedItemsProvider({
+  children,
+  btcPrices,
+  supportedCurrencies,
+  fetchPriceForCurrency,
+}) {
   const [savedItems, setSavedItems] = useLocalStorage('savedSatoshiItems', []);
+  const [satoshiGoal, setSatoshiGoal] = useLocalStorage('satoshiGoal', 1000000);
   const [editingId, setEditingId] = useState(null);
   const [sortCriteria, setSortCriteria] = useState('dateAdded-desc');
 
@@ -33,11 +39,26 @@ export function SavedItemsProvider({ children, btcPrices }) {
     }
   };
 
-  const updateItem = (updatedItem) => {
-    if (!btcPrices) {
-      toast.error('Could not update item, BTC prices unavailable.');
-      return;
+  const updateItem = async (updatedItem) => {
+    // If currency changed or prices missing, try to fetch
+    if (!btcPrices || !btcPrices[updatedItem.currency]) {
+      if (fetchPriceForCurrency) {
+        // Optimistically try to fetch, but we can't await state update easily here without side effects or race conditions
+        // Actually, fetchPriceForCurrency returns nothing but updates logic in App.
+        // But we need the price NOW.
+        // Ideally fetchPriceForCurrency should return the fetched price?
+        // In App.jsx I made it update state. It doesn't return the price.
+        // I should probably rely on btcPrices being updated? But we can't wait for React render here.
+        // For now, if price is missing, we error.
+        // User should have selected currency in Edit form which triggers fetch.
+        toast.error(`Price for ${updatedItem.currency} not available yet.`);
+        return;
+      } else {
+        toast.error('Could not update item, BTC prices unavailable.');
+        return;
+      }
     }
+
     const btcPriceInSelectedCurrency = btcPrices[updatedItem.currency];
     const priceInBtc =
       parseFloat(updatedItem.price) / btcPriceInSelectedCurrency;
@@ -82,6 +103,11 @@ export function SavedItemsProvider({ children, btcPrices }) {
     setEditingId,
     sortCriteria,
     setSortCriteria,
+    satoshiGoal,
+    setSatoshiGoal,
+    supportedCurrencies,
+    fetchPriceForCurrency,
+    btcPrices, // Expose prices for EditForm
   };
 
   return (

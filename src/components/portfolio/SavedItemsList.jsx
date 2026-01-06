@@ -1,6 +1,7 @@
+import React from 'react';
 import EditItemForm from './EditItemForm';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSavedItems } from '../hooks/useSavedItems';
+import { useSavedItems } from '../../hooks/useSavedItems';
 
 function SavedItemsList({ onCompare }) {
   const {
@@ -12,8 +13,20 @@ function SavedItemsList({ onCompare }) {
     onUpdateItem,
     sortCriteria,
     setSortCriteria,
+    satoshiGoal,
+    setSatoshiGoal,
   } = useSavedItems();
+  const [isEditingGoal, setIsEditingGoal] = React.useState(false);
+  const [tempGoal, setTempGoal] = React.useState(satoshiGoal);
+
   const totalSats = items.reduce((total, item) => total + item.sats, 0);
+  const progressPercentage = Math.min((totalSats / satoshiGoal) * 100, 100);
+
+  const handleUpdateGoal = () => {
+    setSatoshiGoal(tempGoal);
+    setIsEditingGoal(false);
+  };
+
   const fiatTotals = items.reduce((acc, item) => {
     if (!acc[item.currency]) {
       acc[item.currency] = 0;
@@ -24,6 +37,63 @@ function SavedItemsList({ onCompare }) {
 
   return (
     <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10 h-full flex flex-col'>
+      {/* Goal Section */}
+      <div className='mb-8 p-4 bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 rounded-xl border border-white/5'>
+        <div className='flex justify-between items-end mb-2'>
+          <h3 className='text-sm font-medium text-neutral-400'>
+            Portfolio Goal
+          </h3>
+          <div className='flex items-center gap-2'>
+            {isEditingGoal ? (
+              <div className='flex items-center gap-2'>
+                <input
+                  type='number'
+                  value={tempGoal}
+                  onChange={(e) => setTempGoal(Number(e.target.value))}
+                  className='w-32 bg-neutral-950/50 border border-white/10 rounded px-2 py-1 text-sm text-right text-brand-orange'
+                />
+                <button
+                  onClick={handleUpdateGoal}
+                  className='text-xs text-green-400 hover:text-green-300'
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div className='flex items-center gap-2'>
+                <span className='text-sm text-neutral-200 font-medium'>
+                  {satoshiGoal.toLocaleString()} sats
+                </span>
+                <button
+                  onClick={() => setIsEditingGoal(true)}
+                  className='text-xs text-neutral-500 hover:text-brand-orange transition-colors'
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className='relative h-4 bg-neutral-950 rounded-full overflow-hidden border border-white/5'>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercentage}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className='absolute top-0 left-0 h-full bg-gradient-to-r from-brand-orange to-orange-500 rounded-full'
+          />
+        </div>
+        <div className='flex justify-between items-center mt-2'>
+          <span className='text-xs text-brand-orange font-bold'>
+            {progressPercentage.toFixed(1)}% Achieved
+          </span>
+          <span className='text-xs text-neutral-500'>
+            {Math.max(0, satoshiGoal - totalSats).toLocaleString()} sats to go
+          </span>
+        </div>
+      </div>
+
       <div className='flex justify-between items-center mb-6'>
         <h2 className='text-2xl font-bold text-neutral-100'>Saved List</h2>
         <div className='flex items-center space-x-4'>
