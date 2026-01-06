@@ -7,6 +7,7 @@ function EditItemForm({ item, onSave, onCancel }) {
   const [price, setPrice] = useState(item.price);
   const [currency, setCurrency] = useState(item.currency);
   const [category, setCategory] = useState(item.category || '');
+  const [currentSats, setCurrentSats] = useState(item.currentSats || 0);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -18,6 +19,7 @@ function EditItemForm({ item, onSave, onCancel }) {
       price: price,
       currency: currency,
       category: category,
+      currentSats: currentSats,
     });
   };
 
@@ -84,6 +86,7 @@ function EditItemForm({ item, onSave, onCancel }) {
       </div>
 
       <div className="mb-2">
+        <label className="block text-xs text-slate-400 mb-1">Category</label>
         <input
           type='text'
           list='edit-categories'
@@ -97,7 +100,22 @@ function EditItemForm({ item, onSave, onCancel }) {
         </datalist>
       </div>
 
-      <div className='flex justify-end space-x-2 mt-3'>
+      <div className="mb-2 mt-3 pt-3 border-t border-slate-600/50">
+        <label className="block text-xs text-[#F7931A] font-bold uppercase tracking-wider mb-2">Stack Progress (Sats)</label>
+        <div className="relative">
+          <input
+            type='number'
+            value={currentSats}
+            onChange={(e) => setCurrentSats(Number(e.target.value))}
+            className='block w-full p-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition font-mono'
+            placeholder='0'
+            min='0'
+          />
+          <div className="absolute right-3 top-2.5 text-xs text-slate-500">sats</div>
+        </div>
+      </div>
+
+      <div className='flex justify-end space-x-2 mt-4'>
         <button
           type='button'
           onClick={onCancel}
