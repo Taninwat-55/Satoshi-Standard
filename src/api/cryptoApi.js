@@ -1,5 +1,21 @@
-export async function fetchBitcoinPrices() {
-  const currencies = 'usd,eur,sek,dkk,thb';
+export async function fetchSupportedCurrencies() {
+  const url = 'https://api.coingecko.com/api/v3/simple/supported_vs_currencies';
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Network response was not ok, status: ${response.status}`
+      );
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch supported currencies:', error);
+    return [];
+  }
+}
+
+export async function fetchBitcoinPrices(currencies = 'usd,eur,sek,dkk,thb') {
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}`;
 
   try {
