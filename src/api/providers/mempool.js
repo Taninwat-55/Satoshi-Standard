@@ -90,5 +90,17 @@ export const mempoolProvider = {
             console.error('All history providers failed:', error);
             return null;
         }
+    },
+
+    async fetchRecommendedFees() {
+        try {
+            // Using official instance for fees as it's lightweight and usually reliable
+            const response = await fetch('https://mempool.space/api/v1/fees/recommended');
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching recommended fees:', error);
+            return null;
+        }
     }
 };
