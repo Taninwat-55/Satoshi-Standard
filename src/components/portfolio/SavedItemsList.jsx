@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EditItemForm from './EditItemForm';
+import CategoryBreakdown from './CategoryBreakdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
 
@@ -16,8 +17,8 @@ function SavedItemsList({ onCompare }) {
     satoshiGoal,
     setSatoshiGoal,
   } = useSavedItems();
-  const [isEditingGoal, setIsEditingGoal] = React.useState(false);
-  const [tempGoal, setTempGoal] = React.useState(satoshiGoal);
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [tempGoal, setTempGoal] = useState(satoshiGoal);
 
   const totalSats = items.reduce((total, item) => total + item.sats, 0);
   const progressPercentage = Math.min((totalSats / satoshiGoal) * 100, 100);
@@ -37,6 +38,9 @@ function SavedItemsList({ onCompare }) {
 
   return (
     <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10 h-full flex flex-col'>
+      {/* Category Breakdown Chart */}
+      <CategoryBreakdown items={items} />
+
       {/* Goal Section */}
       <div className='mb-8 p-4 bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 rounded-xl border border-white/5'>
         <div className='flex justify-between items-end mb-2'>
@@ -157,12 +161,17 @@ function SavedItemsList({ onCompare }) {
                     <div className='bg-slate-700/50 p-3 rounded-lg flex justify-between items-center'>
                       <div>
                         <p className='font-semibold text-white'>{item.name}</p>
-                        <p className='text-sm text-[#F7931A]'>
-                          {item.sats.toLocaleString('en-US')} sats{' '}
-                          <span className='text-slate-400 ml-2'>
+                        <div className='text-sm text-[#F7931A] flex items-center gap-2'>
+                          <span>{item.sats.toLocaleString('en-US')} sats</span>
+                          <span className='text-slate-400'>
                             ({item.price} {item.currency.toUpperCase()})
                           </span>
-                        </p>
+                          {item.category && (
+                            <span className='inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-neutral-600 text-neutral-200 border border-neutral-500'>
+                              {item.category}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className='flex items-center space-x-3'>
                         <button

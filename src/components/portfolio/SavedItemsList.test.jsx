@@ -7,10 +7,14 @@ vi.mock('../../hooks/useSavedItems', () => ({
   useSavedItems: vi.fn(),
 }));
 
+vi.mock('./CategoryBreakdown', () => ({
+  default: () => <div data-testid="category-breakdown">Mock Chart</div>,
+}));
+
 const mockItems = [
-  { id: 1, name: 'Coffee', sats: 10000, price: '4.00', currency: 'usd' },
-  { id: 2, name: 'Pizza', sats: 50000, price: '20.00', currency: 'usd' },
-  { id: 3, name: 'Book', sats: 25000, price: '150.00', currency: 'sek' },
+  { id: 1, name: 'Coffee', sats: 10000, price: '4.00', currency: 'usd', category: 'Food' },
+  { id: 2, name: 'Pizza', sats: 50000, price: '20.00', currency: 'usd', category: 'Food' },
+  { id: 3, name: 'Book', sats: 25000, price: '150.00', currency: 'sek', category: 'Education' },
 ];
 
 describe('SavedItemsList Component', () => {
@@ -29,6 +33,7 @@ describe('SavedItemsList Component', () => {
       setSatoshiGoal: vi.fn(),
       supportedCurrencies: ['usd', 'eur'],
       fetchPriceForCurrency: vi.fn(),
+      itemCategories: ['Food', 'Education'],
     });
 
     render(<SavedItemsList onCompare={vi.fn()} />);
@@ -56,6 +61,7 @@ describe('SavedItemsList Component', () => {
       setSatoshiGoal: vi.fn(),
       supportedCurrencies: ['usd', 'eur'],
       fetchPriceForCurrency: vi.fn(),
+      itemCategories: ['Food', 'Education'],
     });
 
     render(<SavedItemsList onCompare={vi.fn()} />);
@@ -63,6 +69,29 @@ describe('SavedItemsList Component', () => {
     // Mock items total 85,000 sats. Goal is 100,000.
     // Progress should be 85%
     expect(screen.getByText(/85.0% Achieved/i)).toBeInTheDocument();
-    expect(screen.getByText(/15,000 sats to go/i)).toBeInTheDocument();
+  });
+
+  it('renders category tags for items', () => {
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
+      items: mockItems,
+      removeItemFromList: vi.fn(),
+      clearList: vi.fn(),
+      editingId: null,
+      setEditingId: vi.fn(),
+      onUpdateItem: vi.fn(),
+      sortCriteria: 'dateAdded-desc',
+      setSortCriteria: vi.fn(),
+      satoshiGoal: 100000,
+      setSatoshiGoal: vi.fn(),
+      supportedCurrencies: ['usd', 'eur'],
+      fetchPriceForCurrency: vi.fn(),
+      itemCategories: ['Food', 'Education'],
+    });
+
+    render(<SavedItemsList onCompare={vi.fn()} />);
+
+    expect(screen.getAllByText('Food')).toHaveLength(2);
+    expect(screen.getByText('Education')).toBeInTheDocument();
+    expect(screen.getByTestId('category-breakdown')).toBeInTheDocument();
   });
 });

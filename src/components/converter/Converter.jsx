@@ -9,10 +9,11 @@ function Converter({
   supportedCurrencies,
   fetchPriceForCurrency,
 }) {
-  const { addItemToList } = useSavedItems();
+  const { addItemToList, itemCategories } = useSavedItems();
   const [itemName, setItemName] = useState('A cup of coffee');
   const [price, setPrice] = useState('4');
   const [currency, setCurrency] = useState('usd');
+  const [category, setCategory] = useState(''); // NEW state
   const [result, setResult] = useState(null);
   const [mode, setMode] = useState('fiatToSats'); // 'fiatToSats' or 'satsToFiat'
 
@@ -39,6 +40,7 @@ function Converter({
         name: itemName || 'Something',
         price: price, // Original Fiat Price
         currency: currency,
+        category: category, // Pass category
         mode: mode,
       });
     } else {
@@ -53,10 +55,11 @@ function Converter({
         name: itemName || 'Something',
         price: price, // The input sats amount
         currency: currency,
+        category: category, // Pass category
         mode: mode,
       });
     }
-  }, [btcPrices, price, currency, itemName, mode]);
+  }, [btcPrices, price, currency, itemName, mode, category]);
 
   useEffect(() => {
     if (!isLoading && btcPrices) {
@@ -72,6 +75,8 @@ function Converter({
   const handleAddToList = () => {
     if (result) {
       addItemToList(result);
+      // Reset form after adding
+      setCategory('');
     }
   };
 
@@ -87,11 +92,14 @@ function Converter({
         setPrice={setPrice}
         currency={currency}
         setCurrency={setCurrency}
+        category={category}
+        setCategory={setCategory}
         handleSubmit={handleSubmit}
         mode={mode}
         setMode={setMode}
         supportedCurrencies={supportedCurrencies}
         fetchPriceForCurrency={fetchPriceForCurrency}
+        itemCategories={itemCategories}
       />
       <ResultDisplay isLoading={isLoading} result={result} mode={mode} />
       <button

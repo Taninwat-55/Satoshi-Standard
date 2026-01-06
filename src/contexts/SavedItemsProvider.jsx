@@ -93,6 +93,10 @@ export function SavedItemsProvider({
     return sorted;
   }, [savedItems, sortCriteria]);
 
+  const itemCategories = useMemo(() => {
+    return [...new Set(savedItems.map((item) => item.category).filter(Boolean))];
+  }, [savedItems]);
+
   const value = {
     items: sortedItems,
     addItemToList,
@@ -107,7 +111,8 @@ export function SavedItemsProvider({
     setSatoshiGoal,
     supportedCurrencies,
     fetchPriceForCurrency,
-    btcPrices, // Expose prices for EditForm
+    btcPrices,
+    itemCategories,
   };
 
   return (

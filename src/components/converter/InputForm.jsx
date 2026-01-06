@@ -5,11 +5,14 @@ function InputForm({
   setPrice,
   currency,
   setCurrency,
+  category,
+  setCategory,
   handleSubmit,
   mode,
   setMode,
   supportedCurrencies,
   fetchPriceForCurrency,
+  itemCategories,
 }) {
   const handleCurrencyChange = (e) => {
     const newCurrency = e.target.value.toLowerCase();
@@ -58,6 +61,35 @@ function InputForm({
           className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition'
         />
       </div>
+
+      <div>
+        <label
+          htmlFor='category'
+          className='block text-sm font-medium text-neutral-300'
+        >
+          Category (Optional)
+        </label>
+        <div className='relative'>
+          <input
+            type='text'
+            id='category'
+            list='category-suggestions'
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition'
+            placeholder='e.g., Food, Tech, Transport'
+          />
+          <datalist id='category-suggestions'>
+            {itemCategories && itemCategories.map(cat => <option key={cat} value={cat} />)}
+            <option value="Food" />
+            <option value="Tech" />
+            <option value="Transport" />
+            <option value="Entertainment" />
+            <option value="Utilities" />
+          </datalist>
+        </div>
+      </div>
+
       <div className='flex space-x-4'>
         <div className='flex-grow'>
           <label
