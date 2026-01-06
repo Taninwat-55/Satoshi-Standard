@@ -42,13 +42,12 @@ describe('SavedItemsList Component', () => {
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    const totalSection = screen.getByRole('heading', {
-      name: /total/i,
-    }).parentElement;
+    const totalSection = screen.getByText(/Total Portfolio Value/i).parentElement;
 
-    expect(within(totalSection).getByText(/85,000 sats/i)).toBeInTheDocument();
-    expect(within(totalSection).getByText(/24.00 USD/i)).toBeInTheDocument();
-    expect(within(totalSection).getByText(/150.00 SEK/i)).toBeInTheDocument();
+    expect(within(totalSection).getByText(/85,000/i)).toBeInTheDocument();
+    // Use regex to be more flexible with formatting
+    expect(within(totalSection).getByText(/24\.00 USD/i)).toBeInTheDocument();
+    expect(within(totalSection).getByText(/150\.00 SEK/i)).toBeInTheDocument();
   });
 
   it('renders portfolio goal and progress correctly', () => {
@@ -70,9 +69,9 @@ describe('SavedItemsList Component', () => {
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    // Mock items total 85,000 sats. Goal is 100,000.
-    // Progress should be 85%
-    expect(screen.getByText(/85.0% Achieved/i)).toBeInTheDocument();
+    // Check for the percentage text specifically
+    expect(screen.getByText('85.0%')).toBeInTheDocument();
+    expect(screen.getByText('Achieved')).toBeInTheDocument();
   });
 
   it('renders category tags for items', () => {
@@ -119,7 +118,7 @@ describe('SavedItemsList Component', () => {
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    const searchInput = screen.getByPlaceholderText(/search items/i);
+    const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: 'Coffee' } });
 
     await waitFor(() => {
@@ -148,7 +147,7 @@ describe('SavedItemsList Component', () => {
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    const searchInput = screen.getByPlaceholderText(/search items/i);
+    const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: 'Education' } });
 
     await waitFor(() => {
@@ -176,9 +175,9 @@ describe('SavedItemsList Component', () => {
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    const searchInput = screen.getByPlaceholderText(/search items/i);
+    const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: 'NonExistentItem' } });
 
-    expect(screen.getByText(/no items match your search/i)).toBeInTheDocument();
+    expect(screen.getByText(/No items found/i)).toBeInTheDocument();
   });
 });

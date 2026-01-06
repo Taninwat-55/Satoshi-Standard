@@ -46,7 +46,7 @@ describe('Converter Component', () => {
         fireEvent.click(toggleButton);
 
         expect(screen.getByText(/Convert Sats to Fiat/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Amount \(Sats\)/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/^Sats$/i)).toBeInTheDocument();
     });
 
     it('calculates fiat value from sats correctly', () => {
@@ -64,7 +64,7 @@ describe('Converter Component', () => {
         fireEvent.click(toggleButton);
 
         // Enter 100,000,000 sats (1 BTC)
-        const amountInput = screen.getByLabelText(/Amount \(Sats\)/i);
+        const amountInput = screen.getByLabelText(/^Sats$/i);
         fireEvent.change(amountInput, { target: { value: '100000000' } });
 
         // Result should be approx $50,000 (since 1 BTC = $50,000 in mock)
