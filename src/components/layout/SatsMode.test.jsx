@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SatsToggle from './SatsToggle';
-import { useSavedItems } from '../../contexts/SavedItemsContext';
+import { useSavedItems } from '../../hooks/useSavedItems';
 
-// Mock the context hook
-vi.mock('../../contexts/SavedItemsContext', () => ({
+// Mock the hook directly
+vi.mock('../../hooks/useSavedItems', () => ({
     useSavedItems: vi.fn()
 }));
 
