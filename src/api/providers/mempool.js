@@ -52,7 +52,18 @@ export const mempoolProvider = {
                 throw new Error(`Mempool API error: ${response.status}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                const text = await response.text();
+                // Check if response is empty
+                if (!text || text.trim().length === 0) {
+                    throw new Error('Empty response body');
+                }
+                data = JSON.parse(text);
+            } catch (e) {
+                console.warn('Mempool.space API returned invalid/empty JSON:', e);
+                throw new Error('Invalid JSON response');
+            }
 
             // Filter by days
             const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
