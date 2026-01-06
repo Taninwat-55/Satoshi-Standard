@@ -11,6 +11,10 @@ vi.mock('./CategoryBreakdown', () => ({
   default: () => <div data-testid="category-breakdown">Mock Chart</div>,
 }));
 
+vi.mock('./PriceChangeBadge', () => ({
+  default: () => <div data-testid="price-change-badge">Mock Badge</div>,
+}));
+
 const mockItems = [
   { id: 1, name: 'Coffee', sats: 10000, price: '4.00', currency: 'usd', category: 'Food' },
   { id: 2, name: 'Pizza', sats: 50000, price: '20.00', currency: 'usd', category: 'Food' },
@@ -93,5 +97,6 @@ describe('SavedItemsList Component', () => {
     expect(screen.getAllByText('Food')).toHaveLength(2);
     expect(screen.getByText('Education')).toBeInTheDocument();
     expect(screen.getByTestId('category-breakdown')).toBeInTheDocument();
+    expect(screen.getAllByTestId('price-change-badge')).toHaveLength(3);
   });
 });
