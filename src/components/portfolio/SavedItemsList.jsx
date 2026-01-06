@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import EditItemForm from './EditItemForm';
 import CategoryBreakdown from './CategoryBreakdown';
-import FiatLeakChart from './FiatLeakChart';
 import PriceChangeBadge from './PriceChangeBadge';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
@@ -110,10 +109,7 @@ function SavedItemsList({ onCompare }) {
         </div>
       </div>
 
-      {/* Global Chart: Purchasing Power */}
-      <div className='glass-panel p-6'>
-        <FiatLeakChart currency={Object.keys(fiatTotals)[0] || 'usd'} />
-      </div>
+
 
       {/* Saved List Widget */}
       <div className='glass-panel flex-grow flex flex-col min-h-[500px]'>
