@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSavedItems } from '../../contexts/SavedItemsContext';
+import { useSavedItems } from '../../hooks/useSavedItems';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function SatsToggle() {
