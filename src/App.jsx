@@ -110,28 +110,28 @@ export default function App() {
         />
 
         <div className='relative z-10 max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 h-screen flex flex-col'>
-          {/* Header */}
-          <header className='flex items-center justify-between mb-8 pb-6 border-b border-white/5'>
-            <div className='flex items-center gap-4'>
-              <div className='bg-gradient-to-br from-brand-orange to-brand-orange-dark p-2 rounded-xl shadow-lg shadow-orange-500/20'>
-                <FaBitcoin className='text-3xl text-white' />
-              </div>
-              <div>
-                <h1 className='text-2xl font-bold text-white tracking-tight leading-none'>Satoshi Standard</h1>
-                <p className='text-xs text-neutral-400 font-medium tracking-wide uppercase'>Bitcoin Unit Converter</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <SatsToggle />
-              <FeeTicker />
-            </div>
-          </header>
-
           <SavedItemsProvider
             btcPrices={btcPrices}
             supportedCurrencies={supportedCurrencies}
             fetchPriceForCurrency={fetchPriceForCurrency}
           >
+            {/* Header */}
+            <header className='flex items-center justify-between mb-8 pb-6 border-b border-white/5'>
+              <div className='flex items-center gap-4'>
+                <div className='bg-gradient-to-br from-brand-orange to-brand-orange-dark p-2 rounded-xl shadow-lg shadow-orange-500/20'>
+                  <FaBitcoin className='text-3xl text-white' />
+                </div>
+                <div>
+                  <h1 className='text-2xl font-bold text-white tracking-tight leading-none'>Satoshi Standard</h1>
+                  <p className='text-xs text-neutral-400 font-medium tracking-wide uppercase'>Bitcoin Unit Converter</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <SatsToggle />
+                <FeeTicker />
+              </div>
+            </header>
+
             {/* Dashboard Grid */}
             <main className='flex-grow grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 overflow-hidden'>
               {/* Left Panel: Converter (Sticky or Indepedent scroll) */}
