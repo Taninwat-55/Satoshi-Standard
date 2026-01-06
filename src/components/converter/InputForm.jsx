@@ -28,101 +28,71 @@ function InputForm({
 
   return (
     <form onSubmit={handleSubmit} className='space-y-5'>
-      <div className='flex justify-end'>
-        <button
-          type='button'
-          onClick={() =>
-            setMode(mode === 'fiatToSats' ? 'satsToFiat' : 'fiatToSats')
-          }
-          className='text-xs font-medium text-brand-orange hover:text-orange-400 transition-colors flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-full border border-white/10 hover:bg-white/10'
-        >
-          <span className={mode === 'fiatToSats' ? 'underline' : ''}>
+      {/* Mode Toggle */}
+      <div className='flex justify-center mb-6'>
+        <div className='bg-neutral-950/50 p-1 rounded-full border border-white/10 flex relative'>
+          <button
+            type='button'
+            onClick={() => setMode('fiatToSats')}
+            className={`relative z-10 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${mode === 'fiatToSats' ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
             Fiat → Sats
-          </span>
-          <span className='text-neutral-500'>|</span>
-          <span className={mode === 'satsToFiat' ? 'underline' : ''}>
+          </button>
+          <button
+            type='button'
+            onClick={() => setMode('satsToFiat')}
+            className={`relative z-10 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${mode === 'satsToFiat' ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
             Sats → Fiat
-          </span>
-        </button>
+          </button>
+          {/* Sliding pill background */}
+          <div
+            className={`absolute top-1 bottom-1 w-[86px] bg-brand-orange rounded-full shadow-lg shadow-orange-500/20 transition-all duration-300 ease-out left-1 ${mode === 'satsToFiat' ? 'translate-x-[90px]' : 'translate-x-0'}`}
+          ></div>
+        </div>
       </div>
 
-      <div>
-        <label
-          htmlFor='item'
-          className='block text-sm font-medium text-neutral-300'
-        >
-          Item Name
-        </label>
-        <input
-          type='text'
-          id='item'
-          value={itemName}
-          onChange={(e) => setItemName(e.target.value)}
-          className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition'
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor='category'
-          className='block text-sm font-medium text-neutral-300'
-        >
-          Category (Optional)
-        </label>
-        <div className='relative'>
+      <div className='space-y-4'>
+        <div>
+          <label htmlFor='item' className='block text-xs font-medium text-neutral-400 mb-1 ml-1 uppercase tracking-wide'>
+            Item Name
+          </label>
           <input
             type='text'
-            id='category'
-            list='category-suggestions'
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition'
-            placeholder='e.g., Food, Tech, Transport'
+            id='item'
+            value={itemName}
+            onChange={(e) => setItemName(e.target.value)}
+            className='glass-input block w-full p-4 text-lg'
+            placeholder="e.g. Weekly Groceries"
           />
-          <datalist id='category-suggestions'>
-            {itemCategories && itemCategories.map(cat => <option key={cat} value={cat} />)}
-            <option value="Food" />
-            <option value="Tech" />
-            <option value="Transport" />
-            <option value="Entertainment" />
-            <option value="Utilities" />
-          </datalist>
         </div>
-      </div>
 
-      <div className='flex space-x-4'>
-        <div className='flex-grow'>
-          <label
-            htmlFor='price'
-            className='block text-sm font-medium text-neutral-300'
-          >
-            {mode === 'fiatToSats' ? 'Price' : 'Amount (Sats)'}
-          </label>
-          <input
-            type='number'
-            id='price'
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition'
-            placeholder={mode === 'fiatToSats' ? '0.00' : '1000'}
-            step={mode === 'fiatToSats' ? '0.01' : '1'}
-            min='0'
-          />
-        </div>
-        <div>
-          <label
-            htmlFor='currency'
-            className='block text-sm font-medium text-neutral-300'
-          >
-            {mode === 'fiatToSats' ? 'Currency' : 'Target Currency'}
-          </label>
-          <div className='relative'>
+        <div className='grid grid-cols-[1.5fr_1fr] gap-4'>
+          <div>
+            <label htmlFor='price' className='block text-xs font-medium text-neutral-400 mb-1 ml-1 uppercase tracking-wide'>
+              {mode === 'fiatToSats' ? 'Price' : 'Sats'}
+            </label>
+            <input
+              type='number'
+              id='price'
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className='glass-input block w-full p-4 text-lg font-mono'
+              placeholder={mode === 'fiatToSats' ? '0.00' : '1000'}
+              step={mode === 'fiatToSats' ? '0.01' : '1'}
+              min='0'
+            />
+          </div>
+          <div>
+            <label htmlFor='currency' className='block text-xs font-medium text-neutral-400 mb-1 ml-1 uppercase tracking-wide'>
+              {mode === 'fiatToSats' ? 'Currency' : 'Target'}
+            </label>
             <input
               list='currencies'
               id='currency'
               value={currency}
               onChange={handleCurrencyChange}
-              className='mt-1 block w-full p-3 bg-neutral-950/50 border border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition h-full uppercase'
+              className='glass-input block w-full p-4 text-lg uppercase font-bold text-center tracking-wider'
             />
             <datalist id='currencies'>
               {supportedCurrencies &&
@@ -144,15 +114,30 @@ function InputForm({
             </datalist>
           </div>
         </div>
+
+        <div>
+          <label htmlFor='category' className='block text-xs font-medium text-neutral-400 mb-1 ml-1 uppercase tracking-wide'>
+            Category (Optional)
+          </label>
+          <input
+            type='text'
+            id='category'
+            list='category-suggestions'
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className='glass-input block w-full p-4'
+            placeholder='Select or type...'
+          />
+          <datalist id='category-suggestions'>
+            {itemCategories && itemCategories.map(cat => <option key={cat} value={cat} />)}
+            <option value="Food" />
+            <option value="Tech" />
+            <option value="Transport" />
+            <option value="Entertainment" />
+            <option value="Utilities" />
+          </datalist>
+        </div>
       </div>
-      <button
-        type='submit'
-        className='w-full bg-gradient-to-r from-brand-orange to-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity shadow-lg'
-      >
-        {mode === 'fiatToSats'
-          ? 'Calculate in Satoshis'
-          : 'Calculate Fiat Value'}
-      </button>
     </form>
   );
 }

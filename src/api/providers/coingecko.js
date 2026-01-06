@@ -1,3 +1,15 @@
+const API_KEY = import.meta.env.VITE_COINGECKO_API_KEY;
+
+const getHeaders = () => {
+    if (!API_KEY) return {};
+    return {
+        headers: {
+            // Support both header formats just in case, though usually one is enough
+            'x-cg-demo-api-key': API_KEY,
+        },
+    };
+};
+
 export const coingeckoProvider = {
     name: 'coingecko',
     displayName: 'CoinGecko',
@@ -5,8 +17,14 @@ export const coingeckoProvider = {
     async fetchBitcoinPrices(currencies = 'usd,eur,sek,dkk,thb') {
         try {
             const response = await fetch(
-                `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}`
+                `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}`,
+                getHeaders()
             );
+
+            if (!response.ok) {
+                throw new Error(`Status: ${response.status}`);
+            }
+
             const data = await response.json();
             return data.bitcoin;
         } catch (error) {
@@ -18,7 +36,8 @@ export const coingeckoProvider = {
     async fetchSupportedCurrencies() {
         try {
             const response = await fetch(
-                'https://api.coingecko.com/api/v3/simple/supported_vs_currencies'
+                'https://api.coingecko.com/api/v3/simple/supported_vs_currencies',
+                getHeaders()
             );
             const data = await response.json();
             return data.sort();
@@ -32,11 +51,15 @@ export const coingeckoProvider = {
         const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${currency}&days=${days}&interval=daily`;
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, getHeaders());
+
+            if (response.status === 401 || response.status === 429) {
+                console.warn(`CoinGecko Access Restricted (Status: ${response.status}). Data unavailable.`);
+                return null;
+            }
+
             if (!response.ok) {
-                throw new Error(
-                    `Network response was not ok, status: ${response.status}`
-                );
+                throw new Error(`Status: ${response.status}`);
             }
             const data = await response.json();
             if (days > 90) {

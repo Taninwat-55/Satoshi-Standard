@@ -7,7 +7,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 function CategoryBreakdown({ items }) {
     const chartData = useMemo(() => {
         const categoryTotals = {};
-        let uncategorizedTotal = 0;
 
         items.forEach((item) => {
             const category = item.category || 'Uncategorized';
@@ -72,9 +71,8 @@ function CategoryBreakdown({ items }) {
     };
 
     return (
-        <div className='bg-neutral-900/50 backdrop-blur-sm p-6 rounded-2xl border border-white/5 mb-8'>
-            <h3 className='text-lg font-bold text-neutral-200 mb-4'>Spending by Category</h3>
-            <div className='h-64 relative'>
+        <div className='bg-transparent w-full h-full'>
+            <div className='h-full relative'>
                 <Doughnut data={chartData} options={options} />
             </div>
         </div>
