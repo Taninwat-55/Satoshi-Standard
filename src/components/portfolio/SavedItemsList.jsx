@@ -23,6 +23,7 @@ function SavedItemsList({ onCompare }) {
     btcPrices,
     priceSource,
     setPriceSource,
+    satsMode,
   } = useSavedItems();
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(satoshiGoal);
@@ -235,7 +236,7 @@ function SavedItemsList({ onCompare }) {
                             {item.sats.toLocaleString()} <span className='text-xs text-neutral-600 font-sans font-medium'>sats</span>
                           </div>
                           <div className='flex items-center justify-end gap-2 text-xs text-neutral-500'>
-                            <span>{item.price} {item.currency.toUpperCase()}</span>
+                            {!satsMode && <span>{item.price} {item.currency.toUpperCase()}</span>}
                             <PriceChangeBadge item={item} currentBtcPrice={btcPrices ? btcPrices[item.currency] : null} />
                           </div>
                         </div>
@@ -267,9 +268,10 @@ function SavedItemsList({ onCompare }) {
             {totalSats.toLocaleString()} <span className='text-lg font-medium text-brand-orange'>sats</span>
           </div>
           <div className='flex justify-end gap-4 text-sm text-neutral-500'>
-            {Object.entries(fiatTotals).map(([currency, total]) => (
+            {!satsMode && Object.entries(fiatTotals).map(([currency, total]) => (
               <span key={currency}>{total.toFixed(2)} {currency.toUpperCase()}</span>
             ))}
+            {satsMode && <span className="text-brand-orange/50 text-xs italic">Sats-Only Mode Active</span>}
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ function Converter({
   supportedCurrencies,
   fetchPriceForCurrency,
 }) {
-  const { addItemToList, itemCategories } = useSavedItems();
+  const { addItemToList, itemCategories, satsMode } = useSavedItems();
   const [itemName, setItemName] = useState('A cup of coffee');
   const [price, setPrice] = useState('4');
   const [currency, setCurrency] = useState('usd');
@@ -102,7 +102,7 @@ function Converter({
         fetchPriceForCurrency={fetchPriceForCurrency}
         itemCategories={itemCategories}
       />
-      <ResultDisplay isLoading={isLoading} result={result} mode={mode} />
+      <ResultDisplay isLoading={isLoading} result={result} mode={mode} satsMode={satsMode} />
       <button
         onClick={handleAddToList}
         disabled={!result}

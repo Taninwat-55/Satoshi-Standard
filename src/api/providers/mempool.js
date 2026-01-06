@@ -32,47 +32,74 @@ export const mempoolProvider = {
     },
 
     async fetchBitcoinPriceHistoryRange(currency, days = 365) {
+        // defined cutoff once
+        const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
+
+        // Helper to filter and map data
+        const processData = (data, mapFn) => {
+            return data.map(mapFn).filter(item => item[0] >= cutoff);
+        };
+
+        // 1. Try Mempool Mirror (emzy.de)
         try {
-            // Mempool endpoint: /api/v1/historical-price?currency={code}
-            // It returns full history. We will filter by 'days' on client side.
-            // Format: Array of { time: 1234567890, USD: 12345.67 } (if currency is USD) / or "prices": [...]
-            // Actually API returns array of objects directly: [{ time: 111, USD: 222 }, ...]
-
+            console.log('Fetching history from Mempool (emzy.de)...');
             const targetCurrency = currency.toUpperCase();
-
-            // Note: Official mempool.space might not support this endpoint.
-            // Using mempool.emzy.de which is a known reliable instance for historical data.
             const url = `https://mempool.emzy.de/api/v1/historical-price?currency=${targetCurrency}`;
 
             const response = await fetch(url);
-            if (!response.ok) {
-                if (response.status === 400 && targetCurrency === 'USD') {
-                    // Sometimes USD assumes default? Retry without param?
-                }
-                throw new Error(`Mempool API error: ${response.status}`);
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+
+            const text = await response.text();
+            if (!text || text.trim().length === 0) throw new Error('Empty response');
+
+            const data = JSON.parse(text);
+
+            return processData(data, item => {
+                const price = item[targetCurrency] || item.price || item.USD;
+                return [item.time * 1000, parseFloat(price)];
+            });
+
+        } catch (error) {
+            console.warn('Mempool.space (emzy) failed, attempting fallback to Blockchain.info:', error);
+        }
+
+        // 2. Try Blockchain.info (free, CORS-enabled via param)
+        try {
+            console.log('Fetching history from Blockchain.info...');
+            // Blockchain.info only gives USD prices easily for history
+            if (currency.toLowerCase() !== 'usd') {
+                console.warn('Blockchain.info fallback only supports USD. Converting display to USD.');
             }
+
+            // timespan should be close to 'days'. closest options: 1year, 2years, all?
+            // custom param? &start=<timestamp> ?
+            // API: charts/market-price?timespan=5years&format=json&cors=true
+            const url = `https://api.blockchain.info/charts/market-price?timespan=5years&rollingAverage=8hours&format=json&cors=true`;
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Status ${response.status}`);
 
             const data = await response.json();
 
-            // Filter by days
-            const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
-
-            // Map to [timestamp, price]
-            // Data item: { time: 1367193600, USD: 139.08 }
-            // Note: time is in seconds.
-
-            const prices = data
-                .map(item => {
-                    const price = item[targetCurrency] || item.price || item.USD; // Fallback
-                    return [item.time * 1000, parseFloat(price)];
-                })
-                .filter(item => item[0] >= cutoff);
-
-            return prices;
+            // Format: { values: [ { x: 123 (seconds), y: price }, ... ] }
+            return processData(data.values, item => {
+                return [item.x * 1000, parseFloat(item.y)];
+            });
 
         } catch (error) {
-            console.error('Error fetching Bitcoin history from Mempool.space:', error);
-            // Return null so it can try fallback if we keep one.
+            console.error('All history providers failed:', error);
+            return null;
+        }
+    },
+
+    async fetchRecommendedFees() {
+        try {
+            // Using official instance for fees as it's lightweight and usually reliable
+            const response = await fetch('https://mempool.space/api/v1/fees/recommended');
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching recommended fees:', error);
             return null;
         }
     }

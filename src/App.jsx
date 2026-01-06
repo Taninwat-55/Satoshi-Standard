@@ -12,6 +12,9 @@ import {
 } from './api/cryptoApi';
 import { FaBitcoin } from 'react-icons/fa';
 import { SavedItemsProvider } from './contexts/SavedItemsProvider';
+import FeeTicker from './components/layout/FeeTicker';
+import LightningTip from './components/layout/LightningTip';
+import SatsToggle from './components/layout/SatsToggle';
 
 export default function App() {
   const [btcPrices, setBtcPrices] = useState(null);
@@ -118,6 +121,10 @@ export default function App() {
                 <p className='text-xs text-neutral-400 font-medium tracking-wide uppercase'>Bitcoin Unit Converter</p>
               </div>
             </div>
+            <div className="flex items-center gap-4">
+              <SatsToggle />
+              <FeeTicker />
+            </div>
           </header>
 
           <SavedItemsProvider
@@ -160,6 +167,8 @@ export default function App() {
             setTimeRange={setTimeRange}
           />
         )}
+
+        <LightningTip />
       </div>
     </SkeletonTheme>
   );

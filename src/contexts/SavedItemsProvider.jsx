@@ -15,6 +15,7 @@ export function SavedItemsProvider({
   const [satoshiGoal, setSatoshiGoal] = useLocalStorage('satoshiGoal', 1000000);
   const [editingId, setEditingId] = useState(null);
   const [sortCriteria, setSortCriteria] = useState('dateAdded-desc');
+  const [satsMode, setSatsMode] = useLocalStorage('satsMode', false);
 
   const addItemToList = (item) => {
     setSavedItems((prevItems) => [
@@ -117,6 +118,8 @@ export function SavedItemsProvider({
     itemCategories,
     priceSource,
     setPriceSource,
+    satsMode,
+    setSatsMode,
   };
 
   return (
