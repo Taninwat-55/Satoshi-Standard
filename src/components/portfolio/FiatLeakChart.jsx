@@ -42,9 +42,10 @@ function FiatLeakChart({ currency = 'usd' }) {
 
                 if (!prices || prices.length === 0) {
                     if (provider.name === 'mempool') {
-                        setError('Historical data is not available with Mempool.space provider.');
+                        setError('Historical chart not supported by Mempool provider.');
                     } else {
-                        setError('Failed to load historical data.');
+                        // Likely rate limited or API key needed
+                        setError('Chart unavailable (API Rate Limit). Try again later.');
                     }
                     setIsLoading(false);
                     return;
@@ -58,7 +59,7 @@ function FiatLeakChart({ currency = 'usd' }) {
                 // 1 BTC = 100,000,000 Sats
                 // Price = Fiat per BTC (e.g. 50,000 USD/BTC)
                 // Sats per Fiat = 100,000,000 / Price
-                const dataPoints = prices.map(([_, price]) => 100_000_000 / price);
+                const dataPoints = prices.map((item) => 100_000_000 / item[1]);
 
                 setChartData({
                     labels,
@@ -171,8 +172,8 @@ function FiatLeakChart({ currency = 'usd' }) {
                             key={d}
                             onClick={() => setDays(d)}
                             className={`px-3 py-1 text-xs rounded-md transition-all ${days === d
-                                    ? 'bg-brand-orange text-white font-bold shadow-sm'
-                                    : 'text-neutral-400 hover:text-white'
+                                ? 'bg-brand-orange text-white font-bold shadow-sm'
+                                : 'text-neutral-400 hover:text-white'
                                 }`}
                         >
                             {d === 365 ? '1Y' : d === 365 * 5 ? '5Y' : '10Y'}

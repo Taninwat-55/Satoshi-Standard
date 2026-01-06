@@ -81,9 +81,10 @@ function Converter({
   };
 
   return (
-    <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10'>
-      <h2 className='text-2xl font-bold mb-6 text-neutral-100'>
-        {mode === 'fiatToSats' ? 'Price an Item' : 'Convert Sats to Fiat'}
+    <div className='bg-transparent'>
+      <h2 className='text-2xl font-bold mb-6 text-neutral-100 flex items-center justify-between'>
+        <span>{mode === 'fiatToSats' ? 'Price an Item' : 'Convert Sats to Fiat'}</span>
+        {/* We can potentially move the toggle button here from InputForm if we want */}
       </h2>
       <InputForm
         itemName={itemName}
@@ -105,9 +106,9 @@ function Converter({
       <button
         onClick={handleAddToList}
         disabled={!result}
-        className='w-full mt-4 bg-neutral-500/20 text-neutral-200 font-bold py-3 px-4 rounded-lg hover:bg-neutral-500/40 transition-colors disabled:bg-neutral-800/50 disabled:text-neutral-500 disabled:cursor-not-allowed'
+        className='w-full mt-6 bg-gradient-to-r from-brand-orange to-brand-orange-dark text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
       >
-        Add to List
+        Add to Portfolio
       </button>
     </div>
   );

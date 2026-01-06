@@ -3,7 +3,6 @@ import {
     setProvider,
     getProvider,
     fetchBitcoinPrices,
-    fetchSupportedCurrencies,
     availableProviders,
 } from './cryptoApi';
 import { coingeckoProvider } from './providers/coingecko';
