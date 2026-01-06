@@ -22,16 +22,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: satoshi-standard/package-lock.json
         
     - name: Install dependencies
-      working-directory: ./satoshi-standard
       run: npm ci
       
     - name: Run tests
-      working-directory: ./satoshi-standard
       run: npm test -- --run
       
     - name: Build
-      working-directory: ./satoshi-standard
       run: npm run build
