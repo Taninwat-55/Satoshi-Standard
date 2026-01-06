@@ -120,7 +120,21 @@ export function SavedItemsProvider({
     setPriceSource,
     satsMode,
     setSatsMode,
+    importItems,
   };
+
+  function importItems(newItems) {
+    if (!Array.isArray(newItems)) {
+      toast.error('Invalid file format. Expected a list of items.');
+      return;
+    }
+    // Basic validation: check if items have necessary properties (optional but good)
+    // For now, we trust the array but ensure IDs are unique if we were merging.
+    // Since we are replacing, we just set it.
+
+    setSavedItems(newItems);
+    toast.success('Portfolio imported successfully!');
+  }
 
   return (
     <SavedItemsContext.Provider value={value}>
