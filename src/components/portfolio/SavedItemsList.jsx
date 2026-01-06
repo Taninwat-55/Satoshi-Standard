@@ -7,6 +7,7 @@ import PriceChangeBadge from './PriceChangeBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
 import { availableProviders } from '../../api/cryptoApi';
+import DataTools from './DataTools';
 
 function SavedItemsList({ onCompare }) {
   const {
@@ -119,9 +120,9 @@ function SavedItemsList({ onCompare }) {
       {/* Saved List Widget */}
       <div className='glass-panel flex-grow flex flex-col min-h-[500px]'>
         {/* Toolbar */}
-        <div className='p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4'>
-          <div className='flex items-center gap-4'>
-            <h2 className='text-xl font-bold text-white flex items-center gap-2'>
+        <div className='p-6 border-b border-white/5 flex flex-col xl:flex-row xl:items-center justify-between gap-6'>
+          <div className='flex items-center gap-4 flex-wrap'>
+            <h2 className='text-xl font-bold text-white flex items-center gap-2 shrink-0'>
               Dashboard
               <span className='px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded-full font-medium'>{items.length}</span>
             </h2>
@@ -142,7 +143,7 @@ function SavedItemsList({ onCompare }) {
             </div>
           </div>
 
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-3 flex-wrap'>
             <div className='relative'>
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">🔍</span>
               <input
@@ -150,7 +151,7 @@ function SavedItemsList({ onCompare }) {
                 placeholder='Search...'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className='pl-8 pr-4 py-2 bg-neutral-950/50 border border-white/10 rounded-lg text-sm text-white focus:ring-1 focus:ring-brand-orange focus:border-brand-orange transition-all w-48'
+                className='pl-8 pr-4 py-2 bg-neutral-950/50 border border-white/10 rounded-lg text-sm text-white focus:ring-1 focus:ring-brand-orange focus:border-brand-orange transition-all w-full sm:w-48'
               />
             </div>
             <select
@@ -172,6 +173,9 @@ function SavedItemsList({ onCompare }) {
                 CLEAR
               </button>
             )}
+            <div className="border-l border-white/10 pl-3 ml-1">
+              <DataTools />
+            </div>
           </div>
         </div>
 
