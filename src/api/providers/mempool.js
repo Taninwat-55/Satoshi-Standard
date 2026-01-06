@@ -29,5 +29,10 @@ export const mempoolProvider = {
 
     async fetchSupportedCurrencies() {
         return this.supportedCurrencies;
+    },
+
+    async fetchBitcoinPriceHistoryRange() {
+        console.warn('Historical price data is not supported by Mempool.space provider.');
+        return null;
     }
 };
