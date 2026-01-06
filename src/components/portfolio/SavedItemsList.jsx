@@ -4,6 +4,7 @@ import CategoryBreakdown from './CategoryBreakdown';
 import PriceChangeBadge from './PriceChangeBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
+import { availableProviders } from '../../api/cryptoApi';
 
 function SavedItemsList({ onCompare }) {
   const {
@@ -18,6 +19,8 @@ function SavedItemsList({ onCompare }) {
     satoshiGoal,
     setSatoshiGoal,
     btcPrices,
+    priceSource,
+    setPriceSource,
   } = useSavedItems();
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(satoshiGoal);
@@ -111,7 +114,23 @@ function SavedItemsList({ onCompare }) {
       </div>
 
       <div className='flex justify-between items-center mb-6'>
-        <h2 className='text-2xl font-bold text-neutral-100'>Saved List</h2>
+        <div className='flex items-center gap-4'>
+          <h2 className='text-2xl font-bold text-neutral-100'>Saved List</h2>
+          <div className='flex items-center bg-neutral-800/60 rounded-lg p-1 border border-white/10'>
+            {availableProviders.map(provider => (
+              <button
+                key={provider.id}
+                onClick={() => setPriceSource(provider.id)}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${priceSource === provider.id
+                    ? 'bg-brand-orange text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-neutral-200'
+                  }`}
+              >
+                {provider.name}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className='flex items-center space-x-4'>
           {/* Search Input */}
           <input

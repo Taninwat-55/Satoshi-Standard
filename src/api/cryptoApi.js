@@ -1,39 +1,34 @@
-export async function fetchSupportedCurrencies() {
-  const url = 'https://api.coingecko.com/api/v3/simple/supported_vs_currencies';
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(
-        `Network response was not ok, status: ${response.status}`
-      );
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Failed to fetch supported currencies:', error);
-    return [];
+import { coingeckoProvider } from './providers/coingecko';
+import { mempoolProvider } from './providers/mempool';
+
+const providers = {
+  coingecko: coingeckoProvider,
+  mempool: mempoolProvider,
+};
+
+let currentProvider = coingeckoProvider;
+
+export function setProvider(providerName) {
+  if (providers[providerName]) {
+    currentProvider = providers[providerName];
   }
 }
 
-export async function fetchBitcoinPrices(currencies = 'usd,eur,sek,dkk,thb') {
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}`;
+export function getProvider() {
+  return currentProvider;
+}
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 429) {
-        console.warn('Rate limited by CoinGecko API. Please wait a moment.');
-      }
-      throw new Error(
-        `Network response was not ok, status: ${response.status}`
-      );
-    }
-    const data = await response.json();
-    return data.bitcoin;
-  } catch (error) {
-    console.error('Failed to fetch Bitcoin price:', error);
-    return null;
-  }
+export const availableProviders = Object.values(providers).map((p) => ({
+  id: p.name,
+  name: p.displayName,
+}));
+
+export async function fetchSupportedCurrencies() {
+  return await currentProvider.fetchSupportedCurrencies();
+}
+
+export async function fetchBitcoinPrices(currencies) {
+  return await currentProvider.fetchBitcoinPrices(currencies);
 }
 
 export async function fetchBitcoinHistoricalPrice(date) {
