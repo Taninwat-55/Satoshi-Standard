@@ -209,10 +209,27 @@ function SavedItemsList({ onCompare }) {
                             <span>•</span>
                             <span className='uppercase'>{item.category || 'Uncategorized'}</span>
                           </div>
+
+                          {/* Stacking Progress */}
+                          <div className='w-full mt-3'>
+                            <div className='flex justify-between text-[10px] uppercase font-bold tracking-wider text-neutral-500 mb-1'>
+                              <span>Progress</span>
+                              <span>{Math.min(((item.currentSats || 0) / item.sats) * 100, 100).toFixed(0)}%</span>
+                            </div>
+                            <div className='h-1.5 bg-neutral-800 rounded-full overflow-hidden'>
+                              <div
+                                className='h-full bg-brand-orange box-shadow-glow transition-all duration-500'
+                                style={{ width: `${Math.min(((item.currentSats || 0) / item.sats) * 100, 100)}%` }}
+                              />
+                            </div>
+                            <div className='text-[10px] text-neutral-400 mt-1 text-right'>
+                              Stacked: <span className='text-neutral-300 font-mono'>{(item.currentSats || 0).toLocaleString()}</span> sats
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <div className='flex items-center justify-between sm:justify-end gap-6 flex-grow'>
+                      <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-4 sm:mt-0'>
                         <div className='text-right'>
                           <div className='text-[#F7931A] font-bold font-mono text-lg tracking-tight'>
                             {item.sats.toLocaleString()} <span className='text-xs text-neutral-600 font-sans font-medium'>sats</span>

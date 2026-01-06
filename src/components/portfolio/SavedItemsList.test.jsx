@@ -15,10 +15,14 @@ vi.mock('./PriceChangeBadge', () => ({
   default: () => <div data-testid="price-change-badge">Mock Badge</div>,
 }));
 
+vi.mock('./FiatLeakChart', () => ({
+  default: () => <div data-testid="fiat-leak-chart">Mock Fiat Leak Chart</div>,
+}));
+
 const mockItems = [
-  { id: 1, name: 'Coffee', sats: 10000, price: '4.00', currency: 'usd', category: 'Food' },
-  { id: 2, name: 'Pizza', sats: 50000, price: '20.00', currency: 'usd', category: 'Food' },
-  { id: 3, name: 'Book', sats: 25000, price: '150.00', currency: 'sek', category: 'Education' },
+  { id: 1, name: 'Coffee', sats: 10000, price: '4.00', currency: 'usd', category: 'Food', currentSats: 5000 },
+  { id: 2, name: 'Pizza', sats: 50000, price: '20.00', currency: 'usd', category: 'Food', currentSats: 0 },
+  { id: 3, name: 'Book', sats: 25000, price: '150.00', currency: 'sek', category: 'Education', currentSats: 25000 },
 ];
 
 describe('SavedItemsList Component', () => {
@@ -179,5 +183,31 @@ describe('SavedItemsList Component', () => {
     fireEvent.change(searchInput, { target: { value: 'NonExistentItem' } });
 
     expect(screen.getByText(/No items found/i)).toBeInTheDocument();
+  });
+  it('renders stacking progress correctly', () => {
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
+      items: mockItems,
+      removeItemFromList: vi.fn(),
+      clearList: vi.fn(),
+      editingId: null,
+      setEditingId: vi.fn(),
+      onUpdateItem: vi.fn(),
+      sortCriteria: 'dateAdded-desc',
+      setSortCriteria: vi.fn(),
+      satoshiGoal: 100000,
+      setSatoshiGoal: vi.fn(),
+      supportedCurrencies: ['usd', 'eur'],
+      fetchPriceForCurrency: vi.fn(),
+      itemCategories: ['Food', 'Education'],
+    });
+
+    render(<SavedItemsList onCompare={vi.fn()} />);
+
+    // Coffee: 5000 / 10000 = 50%
+    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(screen.getAllByText(/Stacked:/)).toHaveLength(3); // 3 items in mock list
+
+    // Book: 25000 / 25000 = 100%
+    expect(screen.getByText('100%')).toBeInTheDocument();
   });
 });

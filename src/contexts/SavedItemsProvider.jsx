@@ -19,7 +19,7 @@ export function SavedItemsProvider({
   const addItemToList = (item) => {
     setSavedItems((prevItems) => [
       ...prevItems,
-      { ...item, id: Date.now(), dateAdded: new Date().toISOString() },
+      { ...item, id: Date.now(), dateAdded: new Date().toISOString(), currentSats: item.currentSats || 0 },
     ]);
     toast.success(`"${item.name}" added to the list!`);
   };
