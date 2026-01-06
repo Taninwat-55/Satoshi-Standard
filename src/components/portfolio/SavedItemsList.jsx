@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import EditItemForm from './EditItemForm';
 import CategoryBreakdown from './CategoryBreakdown';
+import FiatLeakChart from './FiatLeakChart';
 import PriceChangeBadge from './PriceChangeBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
@@ -55,6 +56,11 @@ function SavedItemsList({ onCompare }) {
     <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10 h-full flex flex-col'>
       {/* Category Breakdown Chart */}
       <CategoryBreakdown items={filteredItems} />
+
+      {/* Fiat Leak Chart */}
+      <div className="mb-6">
+        <FiatLeakChart currency={Object.keys(fiatTotals)[0] || 'usd'} />
+      </div>
 
       {/* Goal Section */}
       <div className='mb-8 p-4 bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 rounded-xl border border-white/5'>
@@ -122,8 +128,8 @@ function SavedItemsList({ onCompare }) {
                 key={provider.id}
                 onClick={() => setPriceSource(provider.id)}
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${priceSource === provider.id
-                    ? 'bg-brand-orange text-white shadow-sm'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                  ? 'bg-brand-orange text-white shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200'
                   }`}
               >
                 {provider.name}
