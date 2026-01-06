@@ -1,9 +1,11 @@
 import { coingeckoProvider } from './providers/coingecko';
 import { mempoolProvider } from './providers/mempool';
+import { coincapProvider } from './providers/coincap';
 
 const providers = {
   coingecko: coingeckoProvider,
   mempool: mempoolProvider,
+  coincap: coincapProvider,
 };
 
 let currentProvider = coingeckoProvider;
