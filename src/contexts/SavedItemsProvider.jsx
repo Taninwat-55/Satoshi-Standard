@@ -8,6 +8,8 @@ export function SavedItemsProvider({
   btcPrices,
   supportedCurrencies,
   fetchPriceForCurrency,
+  priceSource,
+  setPriceSource,
 }) {
   const [savedItems, setSavedItems] = useLocalStorage('savedSatoshiItems', []);
   const [satoshiGoal, setSatoshiGoal] = useLocalStorage('satoshiGoal', 1000000);
@@ -113,6 +115,8 @@ export function SavedItemsProvider({
     fetchPriceForCurrency,
     btcPrices,
     itemCategories,
+    priceSource,
+    setPriceSource,
   };
 
   return (
