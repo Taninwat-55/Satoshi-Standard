@@ -1,7 +1,7 @@
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-function ResultDisplay({ isLoading, result }) {
+function ResultDisplay({ isLoading, result, satsMode }) {
   if (isLoading) {
     return (
       <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
@@ -31,7 +31,7 @@ function ResultDisplay({ isLoading, result }) {
           {parseInt(result.sats).toLocaleString('en-US')} sats is equal to
         </p>
         <p className='text-3xl font-bold text-[#F7931A] my-1'>
-          {formattedFiat}
+          {satsMode ? <span className="opacity-50 blur-[4px] select-none">$ 0.00 XXX</span> : formattedFiat}
         </p>
       </div>
     );
