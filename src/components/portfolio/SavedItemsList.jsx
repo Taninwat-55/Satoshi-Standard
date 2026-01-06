@@ -21,16 +21,26 @@ function SavedItemsList({ onCompare }) {
   } = useSavedItems();
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(satoshiGoal);
-
-  const totalSats = items.reduce((total, item) => total + item.sats, 0);
-  const progressPercentage = Math.min((totalSats / satoshiGoal) * 100, 100);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleUpdateGoal = () => {
     setSatoshiGoal(tempGoal);
     setIsEditingGoal(false);
   };
 
-  const fiatTotals = items.reduce((acc, item) => {
+  const filteredItems = items.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.name.toLowerCase().includes(query) ||
+      (item.category && item.category.toLowerCase().includes(query)) ||
+      item.currency.toLowerCase().includes(query)
+    );
+  });
+
+  const totalSats = filteredItems.reduce((total, item) => total + item.sats, 0);
+  const progressPercentage = Math.min((totalSats / satoshiGoal) * 100, 100);
+
+  const fiatTotals = filteredItems.reduce((acc, item) => {
     if (!acc[item.currency]) {
       acc[item.currency] = 0;
     }
@@ -41,7 +51,7 @@ function SavedItemsList({ onCompare }) {
   return (
     <div className='bg-neutral-900/50 backdrop-blur-lg p-6 rounded-2xl shadow-2xl border border-white/10 h-full flex flex-col'>
       {/* Category Breakdown Chart */}
-      <CategoryBreakdown items={items} />
+      <CategoryBreakdown items={filteredItems} />
 
       {/* Goal Section */}
       <div className='mb-8 p-4 bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 rounded-xl border border-white/5'>
@@ -103,6 +113,15 @@ function SavedItemsList({ onCompare }) {
       <div className='flex justify-between items-center mb-6'>
         <h2 className='text-2xl font-bold text-neutral-100'>Saved List</h2>
         <div className='flex items-center space-x-4'>
+          {/* Search Input */}
+          <input
+            type='text'
+            placeholder='Search items...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className='p-1 text-sm bg-neutral-800/60 border border-white/10 rounded-md text-neutral-200 focus:ring-1 focus:ring-brand-orange focus:border-brand-orange transition w-32 md:w-48'
+          />
+
           {/* Sort Dropdown */}
           {items.length > 1 && (
             <div className='flex items-center space-x-2'>
@@ -137,15 +156,15 @@ function SavedItemsList({ onCompare }) {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <div className='text-slate-500 text-center flex-grow flex items-center justify-center'>
-          <p>Your list is empty.</p>
+          <p>{items.length === 0 ? 'Your list is empty.' : 'No items match your search.'}</p>
         </div>
       ) : (
         <>
           <div className='space-y-3 overflow-y-auto flex-grow pr-2 -mr-2'>
             <AnimatePresence>
-              {items.map((item) => (
+              {filteredItems.map((item) => (
                 <motion.div
                   key={item.id}
                   layout
