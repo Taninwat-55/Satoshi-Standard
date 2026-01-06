@@ -27,9 +27,10 @@ describe('cryptoApi', () => {
     });
 
     it('should list available providers', () => {
-        expect(availableProviders).toHaveLength(2);
+        expect(availableProviders).toHaveLength(3);
         expect(availableProviders[0].id).toBe('coingecko');
         expect(availableProviders[1].id).toBe('mempool');
+        expect(availableProviders[2].id).toBe('coincap');
     });
 
     it('should delegate fetchBitcoinPrices to current provider', async () => {
