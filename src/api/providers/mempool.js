@@ -40,9 +40,9 @@ export const mempoolProvider = {
 
             const targetCurrency = currency.toUpperCase();
 
-            // Note: Mempool.space historical-price endpoint might default to USD if just /historical-price
-            // Docs say ?currency=EUR works.
-            const url = `https://mempool.space/api/v1/historical-price?currency=${targetCurrency}`;
+            // Note: Official mempool.space might not support this endpoint.
+            // Using mempool.emzy.de which is a known reliable instance for historical data.
+            const url = `https://mempool.emzy.de/api/v1/historical-price?currency=${targetCurrency}`;
 
             const response = await fetch(url);
             if (!response.ok) {
