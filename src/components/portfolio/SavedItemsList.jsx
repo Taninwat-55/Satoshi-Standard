@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
 import { availableProviders } from '../../api/cryptoApi';
 import DataTools from './DataTools';
-import { FiSearch, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiCheck } from 'react-icons/fi';
+import { Badge } from '../ui/badge';
+import { Progress } from '../ui/progress';
 import { FaChartLine, FaBitcoin } from 'react-icons/fa';
 import { useCurrencyPreference } from '../../contexts/CurrencyPreferenceContext';
 import { convertCurrency, formatCurrency } from '../../lib/currencies';
@@ -69,17 +71,17 @@ function SavedItemsList({ onCompare }) {
           </div>
 
           <div className='flex justify-between items-start mb-4 relative z-10'>
-            <h3 className='text-sm font-semibold text-neutral-400 uppercase tracking-widest'>Portfolio Goal</h3>
+            <h3 className='section-title'>Portfolio Goal</h3>
             <div className='flex items-center gap-2'>
               {isEditingGoal ? (
-                <div className='flex items-center gap-2 bg-black/40 rounded-lg p-1'>
+                <div className='flex items-center gap-2'>
                   <input
                     type='number'
                     value={tempGoal}
                     onChange={(e) => setTempGoal(Number(e.target.value))}
-                    className='w-24 bg-transparent text-sm text-right text-brand-orange focus:outline-none'
+                    className='glass-input w-24 px-2 py-1 text-sm text-right text-brand-orange'
                   />
-                  <button onClick={handleUpdateGoal} className='text-xs text-green-400 px-2'>✓</button>
+                  <button onClick={handleUpdateGoal} className='btn-icon text-green-400 hover:text-green-300 hover:bg-green-500/10'><FiCheck size={14} /></button>
                 </div>
               ) : (
                 <button onClick={() => setIsEditingGoal(true)} className='btn-ghost'>Edit</button>
@@ -95,20 +97,13 @@ function SavedItemsList({ onCompare }) {
               {totalSats.toLocaleString()} / {satoshiGoal.toLocaleString()} sats
             </div>
 
-            <div className='relative h-2 bg-neutral-800 rounded-full overflow-hidden'>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className='absolute top-0 left-0 h-full bg-gradient-to-r from-brand-orange to-orange-400 box-shadow-glow'
-              />
-            </div>
+            <Progress value={progressPercentage} />
           </div>
         </div>
 
         {/* Widget 2: Category Breakdown */}
         <div className='glass-panel p-6 flex flex-col justify-center'>
-          <h3 className='text-sm font-semibold text-neutral-400 uppercase tracking-widest mb-4'>Allocation</h3>
+          <h3 className='section-title mb-4'>Allocation</h3>
           <div className='flex-grow flex items-center justify-center h-40'>
             <CategoryBreakdown items={filteredItems} />
           </div>
@@ -231,8 +226,12 @@ function SavedItemsList({ onCompare }) {
                             <h4 className='font-bold text-white text-base'>{item.name}</h4>
                             <div className='flex items-center gap-2 mt-1 text-xs text-neutral-500'>
                               <span>{new Date(item.dateAdded).toLocaleDateString()}</span>
-                              <span>•</span>
-                              <span className='uppercase'>{item.category || 'Uncategorized'}</span>
+                              {item.category && (
+                                <>
+                                  <span>•</span>
+                                  <Badge variant='default'>{item.category}</Badge>
+                                </>
+                              )}
                             </div>
 
                             {/* Stacking Progress */}
@@ -301,9 +300,9 @@ function SavedItemsList({ onCompare }) {
 
         {/* Footer Totals */}
         <div className='p-6 border-t border-white/5 bg-black/20 flex items-end justify-between'>
-          <p className='text-xs text-neutral-600 uppercase tracking-widest'>Portfolio</p>
+          <p className='data-label'>Portfolio</p>
           <div className='text-right'>
-            <div className='text-3xl font-bold text-white'>
+            <div className='text-3xl font-bold text-white tabular-nums'>
               {totalSats.toLocaleString()} <span className='text-lg font-medium text-brand-orange'>sats</span>
             </div>
             {!satsMode && totalFiatInPreferred > 0 && (

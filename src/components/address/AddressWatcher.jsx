@@ -10,6 +10,8 @@ import { FaBitcoin } from 'react-icons/fa';
 import { useAddressData } from '../../hooks/useAddressData';
 import { useCurrencyPreference } from '../../contexts/CurrencyPreferenceContext';
 import { formatCurrency } from '../../lib/currencies';
+import { Badge } from '../ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table';
 
 function getAddressErrorContent(error) {
   if (error?.code === 'INVALID_ADDRESS') return { title: 'Invalid address format', detail: 'Bitcoin addresses start with 1, 3, or bc1.' };
@@ -29,8 +31,8 @@ function StatCard({ label, sats, fiatValue, preferredCurrency, btcPrices, sub, c
 
   return (
     <div className="glass-panel p-4 flex flex-col gap-1">
-      <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-medium">{label}</p>
-      <p className={`text-lg font-bold ${color ?? 'text-white'}`}>
+      <p className="data-label">{label}</p>
+      <p className={`data-value ${color ?? ''}`}>
         {formatSats(sats)} <span className="text-xs font-normal text-neutral-400">sats</span>
       </p>
       {fiat && <p className="text-xs text-neutral-500">≈ {fiat}</p>}
@@ -39,7 +41,7 @@ function StatCard({ label, sats, fiatValue, preferredCurrency, btcPrices, sub, c
   );
 }
 
-function TransactionRow({ tx, address, btcPrices, preferredCurrency, index }) {
+function TransactionRow({ tx, btcPrices, preferredCurrency }) {
   const isIn = tx.direction === 'in';
   const fiatValue = btcPrices
     ? (Math.abs(tx.net) / 1e8) * (btcPrices[preferredCurrency] ?? btcPrices['usd'] ?? 0)
@@ -50,57 +52,50 @@ function TransactionRow({ tx, address, btcPrices, preferredCurrency, index }) {
     : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.2 }}
-      className="flex items-center gap-3 p-3 rounded-xl bg-neutral-900/40 border border-white/5 hover:border-white/10 transition-colors group"
-    >
-      {/* Direction icon */}
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0
-        ${isIn ? 'bg-green-500/10' : 'bg-red-500/10'}`}
-      >
-        {isIn
-          ? <FiArrowDownLeft className="text-green-400" size={14} />
-          : <FiArrowUpRight className="text-red-400" size={14} />
-        }
-      </div>
-
-      {/* Txid + date */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-mono text-neutral-400 truncate" title={tx.txid}>
-          {tx.txid.slice(0, 8)}…{tx.txid.slice(-6)}
-        </p>
-        <div className="flex items-center gap-2 mt-0.5">
-          {dateStr
-            ? <span className="text-[10px] text-neutral-600">{dateStr}</span>
-            : <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>
+    <TableRow>
+      <TableCell className="w-10 pr-0">
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center
+          ${isIn ? 'bg-green-500/10' : 'bg-red-500/10'}`}
+        >
+          {isIn
+            ? <FiArrowDownLeft className="text-green-400" size={13} />
+            : <FiArrowUpRight className="text-red-400" size={13} />
           }
         </div>
-      </div>
-
-      {/* Amount */}
-      <div className="text-right shrink-0">
-        <p className={`text-sm font-semibold ${isIn ? 'text-green-400' : 'text-red-400'}`}>
+      </TableCell>
+      <TableCell className="font-mono text-xs text-neutral-400 max-w-[120px]" title={tx.txid}>
+        {tx.txid.slice(0, 8)}…{tx.txid.slice(-6)}
+      </TableCell>
+      <TableCell className="text-xs text-neutral-500">
+        {dateStr ?? '—'}
+      </TableCell>
+      <TableCell>
+        {tx.confirmed
+          ? <Badge variant="green">Confirmed</Badge>
+          : <Badge variant="amber">Pending</Badge>
+        }
+      </TableCell>
+      <TableCell className="text-right">
+        <p className={`text-sm font-semibold tabular-nums ${isIn ? 'text-green-400' : 'text-red-400'}`}>
           {isIn ? '+' : '-'}{formatSats(tx.net)} sats
         </p>
         {fiatValue !== null && (
           <p className="text-[10px] text-neutral-600">≈ {formatCurrency(fiatValue, preferredCurrency)}</p>
         )}
-      </div>
-
-      {/* External link */}
-      <a
-        href={`https://mempool.space/tx/${tx.txid}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 text-neutral-700 hover:text-brand-orange transition-colors opacity-0 group-hover:opacity-100"
-        title="View on mempool.space"
-        onClick={e => e.stopPropagation()}
-      >
-        <FiExternalLink size={13} />
-      </a>
-    </motion.div>
+      </TableCell>
+      <TableCell className="w-8 pl-0">
+        <a
+          href={`https://mempool.space/tx/${tx.txid}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-neutral-600 hover:text-brand-orange transition-colors"
+          title="View on mempool.space"
+          onClick={e => e.stopPropagation()}
+        >
+          <FiExternalLink size={13} />
+        </a>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -258,6 +253,7 @@ export default function AddressWatcher({ btcPrices }) {
                 <span className="text-xs font-mono text-neutral-400 truncate" title={currentAddress}>
                   {currentAddress?.slice(0, 12)}…{currentAddress?.slice(-8)}
                 </span>
+                {isCurrentAddressPinned && <Badge variant="orange"><FiMapPin size={9} />Pinned</Badge>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={handleCopyAddress} className="btn-icon" title="Copy address">
@@ -313,7 +309,7 @@ export default function AddressWatcher({ btcPrices }) {
             {/* Transaction list */}
             <div className="glass-panel p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-white">Recent Transactions</h3>
+                <h3 className="section-title">Recent Transactions</h3>
                 {totalTxCount > 0 && (
                   <span className="text-[10px] text-neutral-600">
                     Showing {transactions.length} of {totalTxCount.toLocaleString()}
@@ -324,18 +320,28 @@ export default function AddressWatcher({ btcPrices }) {
               {transactions.length === 0 ? (
                 <p className="text-sm text-neutral-600 text-center py-6">No transaction history yet.</p>
               ) : (
-                <div className="flex flex-col gap-1.5">
-                  {transactions.map((tx, i) => (
-                    <TransactionRow
-                      key={tx.txid}
-                      tx={tx}
-                      address={currentAddress}
-                      btcPrices={btcPrices}
-                      preferredCurrency={preferredCurrency}
-                      index={i}
-                    />
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10 pr-0"></TableHead>
+                      <TableHead>Transaction</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-8 pl-0"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((tx) => (
+                      <TransactionRow
+                        key={tx.txid}
+                        tx={tx}
+                        btcPrices={btcPrices}
+                        preferredCurrency={preferredCurrency}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
               )}
 
               {totalTxCount > 10 && (

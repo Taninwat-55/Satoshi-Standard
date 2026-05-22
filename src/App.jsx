@@ -130,7 +130,7 @@ export default function App() {
               fetchPriceForCurrency={fetchPriceForCurrency}
             >
               {/* Header */}
-              <header className='flex items-center justify-between mb-8 pb-6 border-b border-white/5'>
+              <header className='flex items-center justify-between mb-6 pb-4 border-b border-white/5'>
                 <div className='flex items-center gap-4'>
                   <div className='bg-gradient-to-br from-brand-orange to-brand-orange-dark p-2 rounded-xl shadow-lg shadow-orange-500/20'>
                     <FaBitcoin className='text-3xl text-white' />
@@ -171,10 +171,10 @@ export default function App() {
                 </aside>
 
                 {/* Right Panel: Portfolio / Address Watcher */}
-                <section className='lg:h-full lg:overflow-hidden flex flex-col gap-3'>
+                <section className='lg:h-full lg:overflow-hidden flex flex-col gap-3 min-h-0'>
 
                   {/* Tab Bar */}
-                  <div className='flex items-center gap-1 bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shrink-0 self-start'>
+                  <div className='flex items-center gap-1 bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shrink-0'>
                     {[
                       { id: 'portfolio', label: 'Portfolio' },
                       { id: 'watcher', label: 'Address Watcher' },
