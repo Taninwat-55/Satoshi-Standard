@@ -1,61 +1,98 @@
-# The Satoshi Standard ₿
+# Satoshi Standard ₿
 
-A simple web app that helps you understand the value of things in Bitcoin Satoshis.
+**An AI-powered Bitcoin finance dashboard.** Convert prices into sats, track your portfolio, watch on-chain addresses, and chat with a live AI analyst — all in the browser, no login required.
 
-## What it does
-This project was built to practice working with external APIs, handling user input, and creating a responsive design. The main idea is to change your perspective on money by pricing everyday items in "sats" (the smallest unit of Bitcoin) instead of your local currency.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-satoshi--standard.vercel.app-f7931a?style=flat-square&logo=vercel&logoColor=white)](https://satoshi-standard.vercel.app)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Groq](https://img.shields.io/badge/AI-Groq%20llama--3.3--70b-orange?style=flat-square)](https://groq.com)
+
+![Demo](docs/demo.gif)
+
+---
 
 ## Features
-- Real-time Price Conversion: Enter any item and its price to see its value in Satoshis instantly.
 
-- Save Your Items: Add items to a personal list to keep track of their value.
+### AI Bitcoin Analyst
+- Streaming chat powered by **Groq** (llama-3.3-70b-versatile) — responses appear token-by-token
+- Context-aware: the system prompt is pre-loaded with your portfolio totals, current mempool fee rates, and live BTC price
+- Persistent chat history (localStorage, 20-message cap)
+- Suggested questions to get started instantly
 
-- Local Storage: Your list is saved in your browser, so it's still there when you come back.
+### On-Chain Address Watcher
+- Look up any Bitcoin address (P2PKH, P2SH, bech32) via **Mempool.space** esplora API
+- See confirmed balance, unconfirmed mempool balance, and total transaction count
+- Transaction history table with direction indicators and **Confirmed / Pending** status badges
+- Pin up to 5 addresses for one-click reload; AbortController cancels in-flight requests on rapid lookup
 
-- Price History: Compare an item's current price in sats to what it was 30 days ago.
+### Portfolio Tracker
+- Save any item with a price and currency; auto-converted to sats at the current BTC rate
+- Per-item DCA stacking progress bar and category badge
+- Portfolio goal widget with animated progress arc
+- Category allocation donut chart and fiat purchasing-power erosion chart
+- CSV export / JSON import — your data never leaves the browser
 
-- Totals View: See the total value of your saved items in both sats and your local currency.
+### Converter & Market Data
+- Real-time BTC price from three providers: **CoinGecko**, **CoinCap**, and **Mempool.space** (fallback chain)
+- Live mempool fee ticker in the header (slow / medium / fast sat/vB)
+- Multi-currency support (50+ fiat currencies)
+- Sats-only mode — hide all fiat values
 
-- Responsive Design: Works well on both desktop and mobile devices.
+---
 
-## Technologies Used
-- Frontend: React (with Vite)
+## Tech Stack
 
-- Styling: Tailwind CSS
+| Layer | Choice | Why |
+|-------|--------|-----|
+| UI | React 19 + Vite | Fast HMR, modern hooks |
+| Styling | Tailwind CSS v4 + framer-motion | Utility-first + fluid animations |
+| AI | Groq API (streaming SSE) | Free tier, sub-second TTFT |
+| On-chain | Mempool.space esplora | Open CORS, no API key needed |
+| Price data | CoinGecko → CoinCap → Mempool.space | Multi-provider fallback |
+| Persistence | localStorage | Zero backend, portfolio demo |
+| Testing | Vitest + React Testing Library | Fast unit + component tests |
 
-- API: CoinGecko API for Bitcoin price data.
-
-- Testing: Vitest & React Testing Library
+---
 
 ## Getting Started
-Follow these steps to run the project on your own computer.
 
-1. Install Dependencies
-
-First, open your terminal and run this command to install all the necessary packages:
-
-```
+```bash
+git clone https://github.com/Taninwat-55/Satoshi-Standard.git
+cd satoshi-standard
 npm install
 ```
 
-2. Start the Development Server
+Copy the example env file and add your keys:
 
-To start the app, run this command:
-
-```
-npm run dev
+```bash
+cp .env.example .env
 ```
 
-The app should now be running at http://localhost:5173/.
+| Variable | Required | Where to get it |
+|----------|----------|-----------------|
+| `VITE_GROQ_API_KEY` | **Yes** (for AI chat) | [console.groq.com](https://console.groq.com) — free tier |
+| `VITE_COINGECKO_API_KEY` | Optional | [coingecko.com/en/api](https://www.coingecko.com/en/api) — free demo plan |
 
-3. Run Tests
-
-To run the tests and make sure everything is working correctly, run:
-
+```bash
+npm run dev      # http://localhost:5173
+npm run test     # run unit tests
+npm run build    # production build
 ```
-npm run test
-```
 
-Author
-Taninwat Kaewpankan - taninwatkaewpankan.xyz
+---
 
+## Design Decisions
+
+**Client-side API keys** — All keys use the `VITE_` prefix and run in the browser. Acceptable for a portfolio demo where rate limits and key exposure are not a concern.
+
+**No backend** — Fully static SPA. Price data, AI inference, and on-chain lookups all hit public or free-tier APIs directly from the browser. Zero infrastructure to maintain.
+
+**Multi-provider price fallback** — CoinGecko is primary; if it returns a 401/429, the app silently falls back to CoinCap, then Mempool.space. Users never see a broken price.
+
+**shadcn component patterns without HSL variables** — Dark-mode-only app. Adopted shadcn's `cn()` utility and component file structure but kept the existing `brand-orange` / `neutral-*` design tokens instead of wiring up a full HSL CSS variable system.
+
+---
+
+## Author
+
+**Taninwat Kaewpankan** · [taninwatkaewpankan.xyz](https://taninwatkaewpankan.xyz)
