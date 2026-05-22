@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSavedItems } from '../../hooks/useSavedItems';
+import { FiCheck, FiX } from 'react-icons/fi';
 
 function EditItemForm({ item, onSave, onCancel }) {
   const { supportedCurrencies, fetchPriceForCurrency, itemCategories } = useSavedItems();
@@ -36,23 +37,21 @@ function EditItemForm({ item, onSave, onCancel }) {
   };
 
   return (
-    <form
-      onSubmit={handleSave}
-      className='bg-slate-700/80 p-3 rounded-lg w-full'
-    >
+    <form onSubmit={handleSave} className='bg-neutral-900/60 border border-white/5 p-4 rounded-xl w-full space-y-3'>
       <input
         type='text'
         value={itemName}
         onChange={(e) => setItemName(e.target.value)}
-        className='block w-full p-2 mb-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
+        className='glass-input block w-full px-3 py-2 text-sm'
         placeholder='Item Name'
       />
-      <div className='flex space-x-2 mb-2'>
+
+      <div className='flex gap-2'>
         <input
           type='number'
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className='flex-grow w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
+          className='glass-input flex-grow px-3 py-2 text-sm font-mono'
           placeholder='Price'
           step='0.01'
           min='0'
@@ -62,7 +61,7 @@ function EditItemForm({ item, onSave, onCancel }) {
             list='edit-currencies'
             value={currency}
             onChange={handleCurrencyChange}
-            className='p-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition w-24 uppercase'
+            className='glass-input px-3 py-2 text-sm w-24 uppercase font-bold text-center tracking-wider'
           />
           <datalist id='edit-currencies'>
             {supportedCurrencies &&
@@ -85,48 +84,49 @@ function EditItemForm({ item, onSave, onCancel }) {
         </div>
       </div>
 
-      <div className="mb-2">
-        <label className="block text-xs text-slate-400 mb-1">Category</label>
-        <input
-          type='text'
-          list='edit-categories'
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className='block w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition'
-          placeholder='Category'
-        />
-        <datalist id='edit-categories'>
-          {itemCategories && itemCategories.map(cat => <option key={cat} value={cat} />)}
-        </datalist>
-      </div>
+      <input
+        type='text'
+        list='edit-categories'
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className='glass-input block w-full px-3 py-2 text-sm'
+        placeholder='Category (optional)'
+      />
+      <datalist id='edit-categories'>
+        {itemCategories && itemCategories.map((cat) => <option key={cat} value={cat} />)}
+      </datalist>
 
-      <div className="mb-2 mt-3 pt-3 border-t border-slate-600/50">
-        <label className="block text-xs text-[#F7931A] font-bold uppercase tracking-wider mb-2">Stack Progress (Sats)</label>
-        <div className="relative">
+      <div className='pt-3 border-t border-white/5'>
+        <label className='block text-xs text-brand-orange font-bold uppercase tracking-wider mb-2'>
+          Stack Progress (Sats)
+        </label>
+        <div className='relative'>
           <input
             type='number'
             value={currentSats}
             onChange={(e) => setCurrentSats(Number(e.target.value))}
-            className='block w-full p-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-[#F7931A] focus:border-[#F7931A] transition font-mono'
+            className='glass-input block w-full px-3 py-2 text-sm font-mono'
             placeholder='0'
             min='0'
           />
-          <div className="absolute right-3 top-2.5 text-xs text-slate-500">sats</div>
+          <span className='absolute right-3 top-2.5 text-xs text-neutral-500'>sats</span>
         </div>
       </div>
 
-      <div className='flex justify-end space-x-2 mt-4'>
+      <div className='flex justify-end gap-2 pt-1'>
         <button
           type='button'
           onClick={onCancel}
-          className='px-3 py-1 text-sm rounded-md bg-slate-600 hover:bg-slate-500 transition'
+          className='btn-ghost'
         >
+          <FiX size={14} />
           Cancel
         </button>
         <button
           type='submit'
-          className='px-3 py-1 text-sm rounded-md bg-[#F7931A] text-slate-900 font-semibold hover:bg-[#E08318] transition'
+          className='inline-flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wide rounded-lg bg-brand-orange text-white hover:bg-brand-orange-dark transition-all'
         >
+          <FiCheck size={14} />
           Save
         </button>
       </div>

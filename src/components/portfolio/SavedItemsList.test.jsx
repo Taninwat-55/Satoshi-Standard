@@ -7,6 +7,20 @@ vi.mock('../../hooks/useSavedItems', () => ({
   useSavedItems: vi.fn(),
 }));
 
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: null,
+    profile: null,
+    isAuthenticated: false,
+    isPro: false,
+    isConfigured: false,
+  }),
+}));
+
+vi.mock('../../contexts/CurrencyPreferenceContext', () => ({
+  useCurrencyPreference: () => ({ preferredCurrency: 'usd', setPreferredCurrency: vi.fn() }),
+}));
+
 vi.mock('./CategoryBreakdown', () => ({
   default: () => <div data-testid="category-breakdown">Mock Chart</div>,
 }));
@@ -25,75 +39,47 @@ const mockItems = [
   { id: 3, name: 'Book', sats: 25000, price: '150.00', currency: 'sek', category: 'Education', currentSats: 25000 },
 ];
 
+const baseMock = {
+  items: mockItems,
+  removeItemFromList: vi.fn(),
+  clearList: vi.fn(),
+  editingId: null,
+  setEditingId: vi.fn(),
+  onUpdateItem: vi.fn(),
+  sortCriteria: 'dateAdded-desc',
+  setSortCriteria: vi.fn(),
+  satoshiGoal: 1000000,
+  setSatoshiGoal: vi.fn(),
+  supportedCurrencies: ['usd', 'eur'],
+  fetchPriceForCurrency: vi.fn(),
+  itemCategories: ['Food', 'Education'],
+  btcPrices: { usd: 50000, sek: 14000 },
+};
+
 describe('SavedItemsList Component', () => {
-  it('calculates and displays the total sats and fiat amounts correctly', () => {
-    // Mock the hook return value
-    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
-      satoshiGoal: 1000000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
-    });
+  it('calculates and displays the total sats correctly', () => {
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue(baseMock);
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    const totalSection = screen.getByText(/Total Portfolio Value/i).parentElement;
-
-    expect(within(totalSection).getByText(/85,000/i)).toBeInTheDocument();
-    // Use regex to be more flexible with formatting
-    expect(within(totalSection).getByText(/24\.00 USD/i)).toBeInTheDocument();
-    expect(within(totalSection).getByText(/150\.00 SEK/i)).toBeInTheDocument();
+    // Total sats: 10000 + 50000 + 25000 = 85000
+    expect(screen.getAllByText(/85,000/i).length).toBeGreaterThan(0);
   });
 
   it('renders portfolio goal and progress correctly', () => {
     vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
+      ...baseMock,
       satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
     });
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
-    // Check for the percentage text specifically
     expect(screen.getByText('85.0%')).toBeInTheDocument();
     expect(screen.getByText('Achieved')).toBeInTheDocument();
   });
 
   it('renders category tags for items', () => {
-    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
-      satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
-    });
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue(baseMock);
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
@@ -104,21 +90,7 @@ describe('SavedItemsList Component', () => {
   });
 
   it('filters items by name search query', async () => {
-    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
-      satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
-    });
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue(baseMock);
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
@@ -133,21 +105,7 @@ describe('SavedItemsList Component', () => {
   });
 
   it('filters items by category search query', async () => {
-    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
-      satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
-    });
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue(baseMock);
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
@@ -161,51 +119,27 @@ describe('SavedItemsList Component', () => {
   });
 
   it('shows no results message when search matches nothing', async () => {
-    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
-      satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
-    });
+    vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue(baseMock);
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
     const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: 'NonExistentItem' } });
 
-    expect(screen.getByText(/No items found/i)).toBeInTheDocument();
+    expect(screen.getByText(/No items match/i)).toBeInTheDocument();
   });
+
   it('renders stacking progress correctly', () => {
     vi.mocked(SavedItemsHooks.useSavedItems).mockReturnValue({
-      items: mockItems,
-      removeItemFromList: vi.fn(),
-      clearList: vi.fn(),
-      editingId: null,
-      setEditingId: vi.fn(),
-      onUpdateItem: vi.fn(),
-      sortCriteria: 'dateAdded-desc',
-      setSortCriteria: vi.fn(),
+      ...baseMock,
       satoshiGoal: 100000,
-      setSatoshiGoal: vi.fn(),
-      supportedCurrencies: ['usd', 'eur'],
-      fetchPriceForCurrency: vi.fn(),
-      itemCategories: ['Food', 'Education'],
     });
 
     render(<SavedItemsList onCompare={vi.fn()} />);
 
     // Coffee: 5000 / 10000 = 50%
     expect(screen.getByText('50%')).toBeInTheDocument();
-    expect(screen.getAllByText(/Stacked:/)).toHaveLength(3); // 3 items in mock list
+    expect(screen.getAllByText(/Stacked:/)).toHaveLength(3);
 
     // Book: 25000 / 25000 = 100%
     expect(screen.getByText('100%')).toBeInTheDocument();

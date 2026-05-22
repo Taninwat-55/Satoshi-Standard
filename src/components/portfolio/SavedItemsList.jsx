@@ -8,6 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedItems } from '../../hooks/useSavedItems';
 import { availableProviders } from '../../api/cryptoApi';
 import DataTools from './DataTools';
+import { FiSearch, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FaChartLine, FaBitcoin } from 'react-icons/fa';
+import { useCurrencyPreference } from '../../contexts/CurrencyPreferenceContext';
+import { convertCurrency, formatCurrency } from '../../lib/currencies';
 
 function SavedItemsList({ onCompare }) {
   const {
@@ -26,6 +30,7 @@ function SavedItemsList({ onCompare }) {
     setPriceSource,
     satsMode,
   } = useSavedItems();
+  const { preferredCurrency } = useCurrencyPreference();
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(satoshiGoal);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,13 +52,11 @@ function SavedItemsList({ onCompare }) {
   const totalSats = filteredItems.reduce((total, item) => total + item.sats, 0);
   const progressPercentage = Math.min((totalSats / satoshiGoal) * 100, 100);
 
-  const fiatTotals = filteredItems.reduce((acc, item) => {
-    if (!acc[item.currency]) {
-      acc[item.currency] = 0;
-    }
-    acc[item.currency] += parseFloat(item.price);
-    return acc;
-  }, {});
+  const totalFiatInPreferred = !satsMode && btcPrices
+    ? filteredItems.reduce((total, item) => {
+        return total + convertCurrency(parseFloat(item.price), item.currency, preferredCurrency, btcPrices);
+      }, 0)
+    : 0;
 
   return (
     <div className='h-full flex flex-col space-y-6 overflow-y-auto pb-6 scrollbar-hide'>
@@ -79,7 +82,7 @@ function SavedItemsList({ onCompare }) {
                   <button onClick={handleUpdateGoal} className='text-xs text-green-400 px-2'>✓</button>
                 </div>
               ) : (
-                <button onClick={() => setIsEditingGoal(true)} className='text-xs text-neutral-500 hover:text-white transition-colors bg-white/5 px-2 py-1 rounded'>Edit</button>
+                <button onClick={() => setIsEditingGoal(true)} className='btn-ghost'>Edit</button>
               )}
             </div>
           </div>
@@ -114,7 +117,7 @@ function SavedItemsList({ onCompare }) {
 
       {/* Global Chart: Purchasing Power */}
       <div className='glass-panel p-6'>
-        <FiatLeakChart currency={Object.keys(fiatTotals)[0] || 'usd'} />
+        <FiatLeakChart currency={preferredCurrency} />
       </div>
 
       {/* Saved List Widget */}
@@ -145,7 +148,7 @@ function SavedItemsList({ onCompare }) {
 
           <div className='flex items-center gap-3 flex-wrap'>
             <div className='relative'>
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">🔍</span>
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
               <input
                 type='text'
                 placeholder='Search...'
@@ -166,11 +169,8 @@ function SavedItemsList({ onCompare }) {
               <option value='name-asc'>A-Z</option>
             </select>
             {items.length > 0 && (
-              <button
-                onClick={clearList}
-                className='text-xs text-red-900/50 hover:text-red-400 px-3 py-2 rounded-lg bg-red-900/10 hover:bg-red-900/20 border border-transparent hover:border-red-900/30 transition-all font-medium'
-              >
-                CLEAR
+              <button onClick={clearList} className='btn-danger'>
+                Clear
               </button>
             )}
             <div className="border-l border-white/10 pl-3 ml-1">
@@ -182,100 +182,136 @@ function SavedItemsList({ onCompare }) {
         {/* List Content */}
         <div className='flex-grow overflow-y-auto p-4 space-y-2'>
           <AnimatePresence>
-            {filteredItems.length === 0 ? (
-              <div className='h-32 flex items-center justify-center text-neutral-500'>
-                No items found.
+            {items.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className='h-48 flex flex-col items-center justify-center gap-3 text-center'
+              >
+                <div className='w-14 h-14 rounded-full bg-brand-orange/10 flex items-center justify-center'>
+                  <FaBitcoin className='text-brand-orange text-2xl' />
+                </div>
+                <div>
+                  <p className='text-neutral-300 font-medium'>No items yet</p>
+                  <p className='text-neutral-500 text-sm mt-1'>Add something from the converter to get started.</p>
+                </div>
+              </motion.div>
+            ) : filteredItems.length === 0 ? (
+              <div className='h-32 flex items-center justify-center text-neutral-500 text-sm'>
+                No items match your search.
               </div>
             ) : (
-              filteredItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  className='group bg-neutral-900/30 hover:bg-neutral-800/40 border border-transparent hover:border-white/5 rounded-xl p-4 transition-all duration-200'
-                >
-                  {editingId === item.id ? (
-                    <EditItemForm
-                      item={item}
-                      onSave={onUpdateItem}
-                      onCancel={() => setEditingId(null)}
-                    />
-                  ) : (
-                    <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-                      <div className='flex items-start gap-4'>
-                        <div className='w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange font-bold text-lg'>
-                          {item.name.charAt(0).toUpperCase()}
+              filteredItems.map((item) => {
+                const convertedPrice = btcPrices
+                  ? convertCurrency(parseFloat(item.price), item.currency, preferredCurrency, btcPrices)
+                  : parseFloat(item.price);
+                const showOriginal = item.currency !== preferredCurrency && !!btcPrices;
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    className='group bg-neutral-900/30 hover:bg-neutral-800/40 border border-transparent hover:border-white/5 rounded-xl p-4 transition-all duration-200'
+                  >
+                    {editingId === item.id ? (
+                      <EditItemForm
+                        item={item}
+                        onSave={onUpdateItem}
+                        onCancel={() => setEditingId(null)}
+                      />
+                    ) : (
+                      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+                        <div className='flex items-start gap-4'>
+                          <div className='w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange font-bold text-lg shrink-0'>
+                            {item.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className='font-bold text-white text-base'>{item.name}</h4>
+                            <div className='flex items-center gap-2 mt-1 text-xs text-neutral-500'>
+                              <span>{new Date(item.dateAdded).toLocaleDateString()}</span>
+                              <span>•</span>
+                              <span className='uppercase'>{item.category || 'Uncategorized'}</span>
+                            </div>
+
+                            {/* Stacking Progress */}
+                            <div className='w-full mt-3'>
+                              <div className='flex justify-between text-[10px] uppercase font-bold tracking-wider text-neutral-500 mb-1'>
+                                <span>Progress</span>
+                                <span>{Math.min(((item.currentSats || 0) / item.sats) * 100, 100).toFixed(0)}%</span>
+                              </div>
+                              <div className='h-1.5 bg-neutral-800 rounded-full overflow-hidden'>
+                                <div
+                                  className='h-full bg-brand-orange transition-all duration-500'
+                                  style={{ width: `${Math.min(((item.currentSats || 0) / item.sats) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <div className='text-[10px] text-neutral-400 mt-1 text-right'>
+                                Stacked: <span className='text-neutral-300 font-mono'>{(item.currentSats || 0).toLocaleString()}</span> sats
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className='font-bold text-white text-base'>{item.name}</h4>
-                          <div className='flex items-center gap-2 mt-1 text-xs text-neutral-500'>
-                            <span>{new Date(item.dateAdded).toLocaleDateString()}</span>
-                            <span>•</span>
-                            <span className='uppercase'>{item.category || 'Uncategorized'}</span>
+
+                        <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-4 sm:mt-0'>
+                          <div className='text-right'>
+                            <div className='text-brand-orange font-bold font-mono text-lg tracking-tight'>
+                              {item.sats.toLocaleString()} <span className='text-xs text-neutral-600 font-sans font-medium'>sats</span>
+                            </div>
+                            <div className='flex items-center justify-end gap-2 mt-0.5'>
+                              {!satsMode && (
+                                <span className='text-xs text-neutral-400'>
+                                  {formatCurrency(convertedPrice, preferredCurrency)}
+                                  {showOriginal && (
+                                    <span className='text-neutral-600 ml-1'>
+                                      ({item.price} {item.currency.toUpperCase()})
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                              <PriceChangeBadge item={item} currentBtcPrice={btcPrices ? btcPrices[item.currency] : null} />
+                            </div>
                           </div>
 
-                          {/* Stacking Progress */}
-                          <div className='w-full mt-3'>
-                            <div className='flex justify-between text-[10px] uppercase font-bold tracking-wider text-neutral-500 mb-1'>
-                              <span>Progress</span>
-                              <span>{Math.min(((item.currentSats || 0) / item.sats) * 100, 100).toFixed(0)}%</span>
-                            </div>
-                            <div className='h-1.5 bg-neutral-800 rounded-full overflow-hidden'>
-                              <div
-                                className='h-full bg-brand-orange box-shadow-glow transition-all duration-500'
-                                style={{ width: `${Math.min(((item.currentSats || 0) / item.sats) * 100, 100)}%` }}
-                              />
-                            </div>
-                            <div className='text-[10px] text-neutral-400 mt-1 text-right'>
-                              Stacked: <span className='text-neutral-300 font-mono'>{(item.currentSats || 0).toLocaleString()}</span> sats
-                            </div>
+                          <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                            <button onClick={() => onCompare(item)} className='btn-icon' title='Compare'>
+                              <FaChartLine size={14} />
+                            </button>
+                            <button onClick={() => setEditingId(item.id)} className='btn-icon' title='Edit'>
+                              <FiEdit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => removeItemFromList(item.id)}
+                              className='btn-icon hover:text-red-400 hover:bg-red-500/10'
+                              title='Delete'
+                            >
+                              <FiTrash2 size={14} />
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-4 sm:mt-0'>
-                        <div className='text-right'>
-                          <div className='text-[#F7931A] font-bold font-mono text-lg tracking-tight'>
-                            {item.sats.toLocaleString()} <span className='text-xs text-neutral-600 font-sans font-medium'>sats</span>
-                          </div>
-                          <div className='flex items-center justify-end gap-2 text-xs text-neutral-500'>
-                            {!satsMode && <span>{item.price} {item.currency.toUpperCase()}</span>}
-                            <PriceChangeBadge item={item} currentBtcPrice={btcPrices ? btcPrices[item.currency] : null} />
-                          </div>
-                        </div>
-
-                        <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                          <button onClick={() => onCompare(item)} className='p-2 hover:bg-white/5 rounded-lg text-neutral-400 hover:text-white transition-colors' title="Compare">
-                            📊
-                          </button>
-                          <button onClick={() => setEditingId(item.id)} className='p-2 hover:bg-white/5 rounded-lg text-neutral-400 hover:text-white transition-colors' title="Edit">
-                            ✏️
-                          </button>
-                          <button onClick={() => removeItemFromList(item.id)} className='p-2 hover:bg-red-500/10 rounded-lg text-neutral-400 hover:text-red-500 transition-colors' title="Delete">
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))
+                    )}
+                  </motion.div>
+                );
+              })
             )}
           </AnimatePresence>
         </div>
 
         {/* Footer Totals */}
-        <div className='p-6 border-t border-white/5 bg-black/20 text-right'>
-          <p className='text-xs text-neutral-500 uppercase tracking-widest mb-1'>Total Portfolio Value</p>
-          <div className='text-3xl font-bold text-white mb-2'>
-            {totalSats.toLocaleString()} <span className='text-lg font-medium text-brand-orange'>sats</span>
-          </div>
-          <div className='flex justify-end gap-4 text-sm text-neutral-500'>
-            {!satsMode && Object.entries(fiatTotals).map(([currency, total]) => (
-              <span key={currency}>{total.toFixed(2)} {currency.toUpperCase()}</span>
-            ))}
-            {satsMode && <span className="text-brand-orange/50 text-xs italic">Sats-Only Mode Active</span>}
+        <div className='p-6 border-t border-white/5 bg-black/20 flex items-end justify-between'>
+          <p className='text-xs text-neutral-600 uppercase tracking-widest'>Portfolio</p>
+          <div className='text-right'>
+            <div className='text-3xl font-bold text-white'>
+              {totalSats.toLocaleString()} <span className='text-lg font-medium text-brand-orange'>sats</span>
+            </div>
+            {!satsMode && totalFiatInPreferred > 0 && (
+              <p className='text-sm text-neutral-500 mt-0.5'>
+                ≈ {formatCurrency(totalFiatInPreferred, preferredCurrency)} {preferredCurrency.toUpperCase()}
+              </p>
+            )}
+            {satsMode && <p className='text-xs text-brand-orange/50 italic mt-1'>Sats-Only Mode Active</p>}
           </div>
         </div>
       </div>

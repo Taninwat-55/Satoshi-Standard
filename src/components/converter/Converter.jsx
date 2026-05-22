@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import InputForm from './InputForm';
 import ResultDisplay from './ResultDisplay';
 import { useSavedItems } from '../../hooks/useSavedItems';
+import { useCurrencyPreference } from '../../contexts/CurrencyPreferenceContext';
 
 function Converter({
   btcPrices,
@@ -10,9 +11,10 @@ function Converter({
   fetchPriceForCurrency,
 }) {
   const { addItemToList, itemCategories, satsMode } = useSavedItems();
+  const { preferredCurrency } = useCurrencyPreference();
   const [itemName, setItemName] = useState('A cup of coffee');
   const [price, setPrice] = useState('4');
-  const [currency, setCurrency] = useState('usd');
+  const [currency, setCurrency] = useState(preferredCurrency);
   const [category, setCategory] = useState(''); // NEW state
   const [result, setResult] = useState(null);
   const [mode, setMode] = useState('fiatToSats'); // 'fiatToSats' or 'satsToFiat'
@@ -82,10 +84,6 @@ function Converter({
 
   return (
     <div className='bg-transparent'>
-      <h2 className='text-2xl font-bold mb-6 text-neutral-100 flex items-center justify-between'>
-        <span>{mode === 'fiatToSats' ? 'Price an Item' : 'Convert Sats to Fiat'}</span>
-        {/* We can potentially move the toggle button here from InputForm if we want */}
-      </h2>
       <InputForm
         itemName={itemName}
         setItemName={setItemName}
@@ -106,7 +104,7 @@ function Converter({
       <button
         onClick={handleAddToList}
         disabled={!result}
-        className='w-full mt-6 bg-gradient-to-r from-brand-orange to-brand-orange-dark text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
+        className='btn-primary mt-6'
       >
         Add to Portfolio
       </button>

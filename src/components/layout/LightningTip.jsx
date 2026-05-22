@@ -26,7 +26,7 @@ export default function LightningTip() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 p-4 bg-brand-orange text-white rounded-full shadow-lg shadow-orange-500/30 hover:bg-brand-orange-dark hover:scale-110 transition-all z-40 group"
+                className="lightning-tip-btn fixed bottom-6 right-6 p-4 bg-brand-orange text-white rounded-full shadow-lg shadow-orange-500/30 hover:bg-brand-orange-dark hover:scale-110 transition-all z-40 group"
                 title="Send a Tip (Lightning)"
             >
                 <FaBolt className="text-xl group-hover:animate-pulse" />

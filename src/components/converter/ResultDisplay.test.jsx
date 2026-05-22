@@ -27,6 +27,6 @@ describe('ResultDisplay Component', () => {
     render(<ResultDisplay isLoading={false} result={mockResult} />);
 
     expect(screen.getByText(/"A Test Item" costs/i)).toBeInTheDocument();
-    expect(screen.getByText(/12,345 sats/i)).toBeInTheDocument();
+    expect(screen.getByText(/12,345/i)).toBeInTheDocument();
   });
 });

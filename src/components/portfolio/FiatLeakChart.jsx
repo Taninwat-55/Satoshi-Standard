@@ -76,10 +76,10 @@ function FiatLeakChart({ currency = 'usd' }) {
                     labels,
                     datasets: [
                         {
-                            label: `Satoshis per 1 USD (Purchasing Power)`,
+                            label: `Sats per 1 ${currency.toUpperCase()}`,
                             data: dataPoints,
-                            borderColor: '#F7931A',
-                            backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                            borderColor: '#f7931a',
+                            backgroundColor: 'rgba(247, 147, 26, 0.12)',
                             borderWidth: 2,
                             pointRadius: 0,
                             pointHoverRadius: 4,
@@ -128,7 +128,7 @@ function FiatLeakChart({ currency = 'usd' }) {
                     drawBorder: false,
                 },
                 ticks: {
-                    color: '#94a3b8',
+                    color: '#a3a3a3',
                     maxTicksLimit: 6,
                 },
             },
@@ -138,7 +138,7 @@ function FiatLeakChart({ currency = 'usd' }) {
                     drawBorder: false,
                 },
                 ticks: {
-                    color: '#94a3b8',
+                    color: '#a3a3a3',
                     callback: (value) => value.toLocaleString(),
                 },
                 title: {
@@ -174,7 +174,7 @@ function FiatLeakChart({ currency = 'usd' }) {
                 <div>
                     <h3 className="text-lg font-semibold text-white">Fiat Purchasing Power</h3>
                     <p className="text-sm text-neutral-400 flex items-center gap-2">
-                        1 USD purchasing power in Sats
+                        1 {currency.toUpperCase()} purchasing power in Sats
                         {usedProvider && <span className="text-xs bg-neutral-800 px-2 py-0.5 rounded text-neutral-500">Source: {usedProvider}</span>}
                     </p>
                 </div>

@@ -4,18 +4,18 @@ import 'react-loading-skeleton/dist/skeleton.css';
 function ResultDisplay({ isLoading, result, satsMode }) {
   if (isLoading) {
     return (
-      <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
+      <div className='mt-6 pt-5 border-t border-white/5 text-center h-24 flex flex-col justify-center gap-2'>
         <Skeleton width={120} style={{ margin: '0 auto' }} />
-        <Skeleton width={200} height={30} style={{ margin: '4px auto 0' }} />
+        <Skeleton width={200} height={32} style={{ margin: '0 auto' }} />
       </div>
     );
   }
 
   if (!result) {
     return (
-      <p className='text-center text-slate-400 mt-8 h-20 flex items-center justify-center'>
-        Enter an item and price to see the result.
-      </p>
+      <div className='mt-6 pt-5 border-t border-white/5 text-center h-24 flex items-center justify-center'>
+        <p className='text-neutral-500 text-sm'>Enter an item and price to see the result.</p>
+      </div>
     );
   }
 
@@ -26,22 +26,29 @@ function ResultDisplay({ isLoading, result, satsMode }) {
     }).format(result.fiat);
 
     return (
-      <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
-        <p className='text-md text-slate-300'>
+      <div className='mt-6 pt-5 border-t border-white/5 text-center h-24 flex flex-col justify-center'>
+        <p className='text-sm text-neutral-400'>
           {parseInt(result.sats).toLocaleString('en-US')} sats is equal to
         </p>
-        <p className='text-3xl font-bold text-[#F7931A] my-1'>
-          {satsMode ? <span className="opacity-50 blur-[4px] select-none">$ 0.00 XXX</span> : formattedFiat}
+        <p className='text-4xl font-bold text-brand-orange tracking-tight mt-1'>
+          {satsMode ? (
+            <span className='opacity-50 blur-[4px] select-none'>$ 0.00 XXX</span>
+          ) : (
+            formattedFiat
+          )}
         </p>
       </div>
     );
   }
 
   return (
-    <div className='mt-6 p-4 bg-slate-900/50 rounded-lg text-center h-20 flex flex-col justify-center'>
-      <p className='text-md text-slate-300'>"{result.name}" costs</p>
-      <p className='text-3xl font-bold text-[#F7931A] my-1'>
-        {result.sats.toLocaleString('en-US')} sats
+    <div className='mt-6 pt-5 border-t border-white/5 text-center h-24 flex flex-col justify-center'>
+      <p className='text-sm text-neutral-400'>
+        &quot;{result.name}&quot; costs
+      </p>
+      <p className='text-4xl font-bold text-brand-orange tracking-tight font-mono mt-1'>
+        {result.sats.toLocaleString('en-US')}{' '}
+        <span className='text-lg font-medium font-sans text-neutral-500'>sats</span>
       </p>
     </div>
   );

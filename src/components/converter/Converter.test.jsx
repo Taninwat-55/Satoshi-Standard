@@ -3,9 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Converter from './Converter';
 import * as SavedItemsHooks from '../../hooks/useSavedItems';
 
-// Mock useSavedItems
 vi.mock('../../hooks/useSavedItems', () => ({
     useSavedItems: vi.fn(),
+}));
+
+vi.mock('../../contexts/CurrencyPreferenceContext', () => ({
+    useCurrencyPreference: () => ({ preferredCurrency: 'usd', setPreferredCurrency: vi.fn() }),
 }));
 
 describe('Converter Component', () => {
@@ -28,7 +31,7 @@ describe('Converter Component', () => {
             />
         );
 
-        expect(screen.getByText(/Price an Item/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Fiat → Sats/i })).toBeInTheDocument();
         expect(screen.getByLabelText(/^Price$/i)).toBeInTheDocument();
     });
 
@@ -45,7 +48,6 @@ describe('Converter Component', () => {
         const toggleButton = screen.getByRole('button', { name: /Sats → Fiat/i });
         fireEvent.click(toggleButton);
 
-        expect(screen.getByText(/Convert Sats to Fiat/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/^Sats$/i)).toBeInTheDocument();
     });
 
@@ -85,6 +87,6 @@ describe('Converter Component', () => {
         // Default price is 4, USD is 50000.
         // 4 / 50000 = 0.00008 BTC = 8000 sats.
 
-        expect(screen.getByText(/8,000 sats/i)).toBeInTheDocument();
+        expect(screen.getByText(/8,000/i)).toBeInTheDocument();
     });
 });
