@@ -53,8 +53,11 @@ export const mempoolProvider = {
             if (!text || text.trim().length === 0) throw new Error('Empty response');
 
             const data = JSON.parse(text);
+            // emzy.de wraps the array under a "prices" key: { prices: [...] }
+            const priceArray = Array.isArray(data) ? data : data.prices;
+            if (!Array.isArray(priceArray)) throw new Error('Unexpected response shape');
 
-            return processData(data, item => {
+            return processData(priceArray, item => {
                 const price = item[targetCurrency] || item.price || item.USD;
                 return [item.time * 1000, parseFloat(price)];
             });

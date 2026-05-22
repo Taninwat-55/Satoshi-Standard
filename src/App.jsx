@@ -16,6 +16,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import FeeTicker from './components/layout/FeeTicker';
 import LightningTip from './components/layout/LightningTip';
 import AiChat from './components/ai/AiChat';
+import AddressWatcher from './components/address/AddressWatcher';
+import { motion, AnimatePresence } from 'framer-motion';
 import SatsToggle from './components/layout/SatsToggle';
 import CurrencySelector from './components/shared/CurrencySelector';
 // Auth & Stripe components - uncomment when Supabase is ready
@@ -33,6 +35,7 @@ export default function App() {
   const [historyCache, setHistoryCache] = useState({});
   const [modalItem, setModalItem] = useState(null);
   const [timeRange, setTimeRange] = useState(30);
+  const [activeTab, setActiveTab] = useState('portfolio'); // 'portfolio' | 'watcher'
 
   // Auth & Pricing modals - disabled until Supabase is configured
   // const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -167,9 +170,60 @@ export default function App() {
                   </div>
                 </aside>
 
-                {/* Right Panel: Portfolio Dashboard */}
-                <section className='lg:h-full lg:overflow-hidden flex flex-col'>
-                  <SavedItemsList onCompare={handleComparePrice} />
+                {/* Right Panel: Portfolio / Address Watcher */}
+                <section className='lg:h-full lg:overflow-hidden flex flex-col gap-3'>
+
+                  {/* Tab Bar */}
+                  <div className='flex items-center gap-1 bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shrink-0 self-start'>
+                    {[
+                      { id: 'portfolio', label: 'Portfolio' },
+                      { id: 'watcher', label: 'Address Watcher' },
+                    ].map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200
+                          ${activeTab === tab.id ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                      >
+                        {activeTab === tab.id && (
+                          <motion.span
+                            layoutId='tab-indicator'
+                            className='absolute inset-0 bg-brand-orange/20 border border-brand-orange/40 rounded-xl'
+                            transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                          />
+                        )}
+                        <span className='relative z-10'>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab Content */}
+                  <AnimatePresence mode='wait'>
+                    {activeTab === 'portfolio' ? (
+                      <motion.div
+                        key='portfolio'
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className='flex-grow overflow-hidden flex flex-col'
+                      >
+                        <SavedItemsList onCompare={handleComparePrice} />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key='watcher'
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className='flex-grow overflow-y-auto'
+                      >
+                        <AddressWatcher btcPrices={btcPrices} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                 </section>
               </main>
               <AiChat />
